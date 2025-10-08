@@ -161,12 +161,13 @@ TEST_F(MrccTest, runDFTCalculation) {
     calculator.setRequiredProperties(Property::Energy);
     calculator.setStructure(methane);
     const auto res = calculator.calculate("");
-    EXPECT_NEAR(res.get<Property::Energy>(), -40.415282, 1e-5);
+    // DFT integration grids etc change every now and then, so we allow a higher tolerance here.
+    EXPECT_NEAR(res.get<Property::Energy>(), -40.415282, 1e-4);
 
     calculator.settings().modifyInt(Utils::SettingsNames::molecularCharge, 1);
     calculator.settings().modifyInt(Utils::SettingsNames::spinMultiplicity, 2);
     const auto res2 = calculator.calculate("");
-    EXPECT_NEAR(res2.get<Property::Energy>(), -39.99014, 1e-5);
+    EXPECT_NEAR(res2.get<Property::Energy>(), -39.99014, 1e-4);
 
     boost::filesystem::remove_all(calculator.getCalculationDirectory());
   }

@@ -5,6 +5,7 @@
  *            See LICENSE.txt for details.
  */
 #include "Utils/Geometry/AtomCollection.h"
+#include "Utils/Geometry/ElementInfo.h"
 
 namespace Scine {
 namespace Utils {
@@ -218,6 +219,23 @@ std::vector<unsigned int> AtomCollection::keepAtomsByIndices(const std::vector<u
   }
   return this->removeAtomsByIndices(atomIndicesRemoved);
 }
+bool AtomCollection::isLinear() const {
+  if (this->size() == 1) {
+    return false;
+  }
+  if (this->size() == 2) {
+    return true;
+  }
+  Eigen::Vector3d referenceDirection = (positions_.row(0) - positions_.row(1)).normalized();
+  for (int i = 2; i < this->size(); ++i) {
+    Eigen::Vector3d otherDirection = (positions_.row(0) - positions_.row(i)).normalized();
+    double scalarProduct = otherDirection.transpose() * referenceDirection;
+    if (std::abs(scalarProduct - 1) > 1e-3) {
+      return false;
+    }
+  }
+  return true;
+}
 
 AtomCollection::AtomCollectionIterator AtomCollection::AtomCollectionIterator::operator++(int) {
   AtomCollectionIterator retval;
@@ -255,6 +273,14 @@ bool AtomCollection::AtomCollectionIterator::operator!=(AtomCollectionIterator o
 }
 
 AtomCollection::AtomCollectionIterator::AtomCollectionIterator(AtomCollection const* ac, int num) : ac_(ac), num_(num) {
+}
+
+unsigned int AtomCollection::nNeutralElectrons() const {
+  unsigned int nElectrons = 0;
+  for (const auto& element : this->getElements()) {
+    nElectrons += Utils::ElementInfo::Z(element);
+  }
+  return nElectrons;
 }
 
 } /* namespace Utils */

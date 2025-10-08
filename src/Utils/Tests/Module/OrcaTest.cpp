@@ -261,8 +261,8 @@ TEST_F(AnOrcaTest, OutputIsParsedCorrectly) {
   ASSERT_THAT(thermochemistry.overall.entropy, DoubleNear(0.02210368 / parser.getTemperature(), 1e-8));
   ASSERT_THAT(thermochemistry.overall.zeroPointVibrationalEnergy, DoubleNear(0.02101209, 1e-8));
   ASSERT_THAT(thermochemistry.overall.gibbsFreeEnergy, DoubleNear(-75.81557495, 1e-8));
-  ASSERT_FALSE(thermochemistry.overall.heatCapacityP == container.heatCapacityP);
-  ASSERT_FALSE(thermochemistry.overall.heatCapacityV == container.heatCapacityV);
+  ASSERT_TRUE(std::isnan(thermochemistry.overall.heatCapacityP) and std::isnan(container.heatCapacityP));
+  ASSERT_TRUE(std::isnan(thermochemistry.overall.heatCapacityV) and std::isnan(container.heatCapacityV));
 }
 
 TEST_F(AnOrcaTest, CheckResultsClearing1) {
@@ -1047,6 +1047,39 @@ TEST_F(AnOrcaTest, BrokenSymmetryCalculationIsSetUpCorrectly) {
   std::regex regex2(regexString);
   bool b = std::regex_search(content, matches, regex2);
   ASSERT_TRUE(b);
+}
+
+TEST_F(AnOrcaTest, OneElectronCorrelationCalculation) {
+#ifndef _WIN32
+  const char* envVariablePtr = std::getenv("ORCA_BINARY_PATH");
+  if (envVariablePtr) {
+    auto cloneHF = calculator.clone();
+    cloneHF->settings().modifyString(Utils::SettingsNames::method, "HF");
+    cloneHF->settings().modifyString(Utils::SettingsNames::basisSet, "cc-pVDZ-F12");
+    cloneHF->settings().modifyString(Utils::ExternalQC::SettingsNames::baseWorkingDirectory, pathToResource.string());
+    cloneHF->settings().modifyInt(Utils::SettingsNames::spinMultiplicity, 2);
+
+    std::stringstream stream("1\n\n"
+                             "H     0.00000000   0.0000000    0.0000000\n");
+
+    auto structure = Utils::XyzStreamHandler::read(stream);
+    cloneHF->setRequiredProperties(Property::Energy);
+    cloneHF->setStructure(structure);
+    const auto hfResults = cloneHF->calculate("HF calculation");
+    const double hfEnergy = hfResults.get<Property::Energy>();
+
+    auto cloneCC = calculator.clone();
+    cloneCC->settings().modifyString(Utils::SettingsNames::method, "DLPNO-CCSD(T)-F12");
+    cloneCC->settings().modifyString(Utils::SettingsNames::basisSet, "cc-pVDZ-F12");
+    cloneCC->settings().modifyString(Utils::ExternalQC::SettingsNames::baseWorkingDirectory, pathToResource.string());
+    cloneCC->settings().modifyInt(Utils::SettingsNames::spinMultiplicity, 2);
+    cloneCC->setRequiredProperties(Property::Energy);
+    cloneCC->setStructure(structure);
+    const auto ccResults = cloneCC->calculate("HF calculation");
+    const double ccEnergy = ccResults.get<Property::Energy>();
+    EXPECT_NEAR(ccEnergy, hfEnergy, 1e-6);
+  }
+#endif
 }
 
 } // namespace Tests

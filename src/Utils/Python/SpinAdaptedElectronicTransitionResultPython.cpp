@@ -27,6 +27,12 @@ void init_spin_adapted_electronic_transition_result(pybind11::module& m) {
       m, "ElectronicTransitionResult");
   electronicTransitionResult.def_readonly("eigenstates", &ElectronicTransitionResult::eigenStates);
   electronicTransitionResult.def_readonly("transition_dipoles", &ElectronicTransitionResult::transitionDipoles);
+  electronicTransitionResult.def_readonly("multiplicities", &ElectronicTransitionResult::multiplicities);
+
+  pybind11::class_<ElectronicCIResult, std::shared_ptr<ElectronicCIResult>> electronicCIResult(m, "ElectronicCIResult");
+  electronicCIResult.def_readonly("eigenstates", &ElectronicCIResult::eigenStates);
+  electronicCIResult.def_readonly("oscillator_strengths", &ElectronicCIResult::oscillatorStrengths);
+  electronicCIResult.def_readonly("spin_squared", &ElectronicCIResult::spinSquared);
 
   pybind11::class_<SpinAdaptedElectronicTransitionResult> spinAdaptedElectronicTransitionResult(
       m, "SpinAdaptedElectronicTransitionResult");
@@ -34,4 +40,5 @@ void init_spin_adapted_electronic_transition_result(pybind11::module& m) {
   spinAdaptedElectronicTransitionResult.def_readonly("triplet", &SpinAdaptedElectronicTransitionResult::triplet);
   spinAdaptedElectronicTransitionResult.def_readonly("unrestricted", &SpinAdaptedElectronicTransitionResult::unrestricted);
   spinAdaptedElectronicTransitionResult.def_readonly("mo_labels", &SpinAdaptedElectronicTransitionResult::transitionLabels);
+  spinAdaptedElectronicTransitionResult.def_readonly("ci_results", &SpinAdaptedElectronicTransitionResult::ciResult);
 }

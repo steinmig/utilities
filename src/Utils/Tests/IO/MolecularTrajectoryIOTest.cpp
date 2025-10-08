@@ -26,7 +26,7 @@ static void assertSameTrajectories(const MolecularTrajectory& trj, const Molecul
   const auto& residueInfoB = trj.getResidues();
   for (unsigned int i = 0; i < elementsA.size(); ++i) {
     EXPECT_EQ(elementsA[i], elementsB[i]);
-    if (not residueInfoA.empty()) {
+    if (!residueInfoA.empty()) {
       EXPECT_EQ(residueInfoA[i], residueInfoB[i]);
     }
   }

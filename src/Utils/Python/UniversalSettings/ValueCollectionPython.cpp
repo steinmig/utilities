@@ -205,7 +205,7 @@ void init_value_collection(pybind11::module& m) {
    * ValueCollections have nested class states, and using C++ copy constructors
    * might be preferable
    */
-  value_collection.def("__deepcopy__", [](const ValueCollection& coll, const pybind11::dict & /* memo */) -> ValueCollection {
+  value_collection.def("__deepcopy__", [](const ValueCollection& coll, const pybind11::dict& /* memo */) -> ValueCollection {
     return coll;
   });
 

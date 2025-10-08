@@ -201,8 +201,8 @@ bool hasCalculator(std::string method_family, std::string program) {
   return true;
 }
 
-std::shared_ptr<Scine::Core::Calculator> loadSystem(const std::string& path, std::string method_family,
-                                                    const pybind11::kwargs& kwargs) {
+std::shared_ptr<Scine::Core::Calculator> getCalculatorWithSettings(const std::string& method_family,
+                                                                   const pybind11::kwargs& kwargs) {
   // Convert to ValueCollection and read program
   Scine::Utils::UniversalSettings::ValueCollection collection;
   update(collection, pybind11::dict(kwargs), true);
@@ -214,9 +214,24 @@ std::shared_ptr<Scine::Core::Calculator> loadSystem(const std::string& path, std
   if (!calc->settings().valid()) {
     calc->settings().throwIncorrectSettings();
   }
+
+  return calc;
+}
+
+std::shared_ptr<Scine::Core::Calculator> loadSystem(const std::string& path, std::string method_family,
+                                                    const pybind11::kwargs& kwargs) {
+  auto calc = getCalculatorWithSettings(method_family, kwargs);
   // Set initial structure
   auto readResults = Scine::Utils::ChemicalFileHandler::read(path);
   calc->setStructure(readResults.first);
+  return calc;
+}
+
+std::shared_ptr<Scine::Core::Calculator> loadSystem(const Scine::Utils::AtomCollection& structure,
+                                                    std::string method_family, const pybind11::kwargs& kwargs) {
+  auto calc = getCalculatorWithSettings(method_family, kwargs);
+  // Set initial structure
+  calc->setStructure(structure);
   return calc;
 }
 
@@ -338,10 +353,17 @@ void init_calculator(pybind11::module& m) {
         "Checks if a calculator with the given method and the given program is available.");
   m.def("get_calculator", &Scine::Utils::CalculationRoutines::getCalculator, pybind11::arg("method_family"),
         pybind11::arg("program") = "Any", "Generates a calculator with the given method and from the given program.");
-  m.def("load_system", &loadSystem, pybind11::arg("path"), pybind11::arg("method_family"),
+  m.def("load_system", pybind11::overload_cast<const std::string&, std::string, const pybind11::kwargs&>(&loadSystem),
+        pybind11::arg("path"), pybind11::arg("method_family"),
         "Loads a single system (xyz-file) into a Calculator with the given method and optional settings. (Deprecated)");
-  m.def("load_system_into_calculator", &loadSystem, pybind11::arg("path"), pybind11::arg("method_family"),
+  m.def("load_system_into_calculator",
+        pybind11::overload_cast<const std::string&, std::string, const pybind11::kwargs&>(&loadSystem),
+        pybind11::arg("path"), pybind11::arg("method_family"),
         "Loads a single system (xyz-file) into a Calculator with the given method and optional settings.");
+  m.def("load_system_into_calculator",
+        pybind11::overload_cast<const Scine::Utils::AtomCollection&, std::string, const pybind11::kwargs&>(&loadSystem),
+        pybind11::arg("path"), pybind11::arg("method_family"),
+        "Loads a single system (AtomCollection) into a Calculator with the given method and optional settings.");
   m.def("get_available_settings", &getAvailableSettings, pybind11::arg("method_family"), pybind11::arg("program") = "Any",
         "Gives the available default settings of a Calculator with the given method and from the given program");
   m.def("get_possible_properties", &getPossiblePropertiesByStrings, pybind11::arg("method_family"),

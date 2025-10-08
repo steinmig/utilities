@@ -4,7 +4,6 @@
  *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.\n
  *            See LICENSE.txt for details.
  */
-#include "Utils/MSVCCompatibility.h"
 #include <Core/Interfaces/Calculator.h>
 #include <Core/Interfaces/CalculatorWithReference.h>
 #include <Core/Log.h>
@@ -12,6 +11,7 @@
 #include <Utils/CalculatorBasics/TestCalculator.h>
 #include <Utils/Constants.h>
 #include <Utils/IO/ChemicalFileFormats/XyzStreamHandler.h>
+#include <Utils/MSVCCompatibility.h>
 #include <Utils/MolecularDynamics/LeapFrogMD.h>
 #include <Utils/MolecularDynamics/MolecularDynamics.h>
 #include <Utils/MolecularDynamics/MolecularDynamicsSettings.h>

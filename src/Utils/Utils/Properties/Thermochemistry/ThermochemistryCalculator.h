@@ -11,14 +11,18 @@
 #include <Utils/DataStructures/PartialHessian.h>
 #include <Utils/GeometricDerivatives/NormalModesContainer.h>
 #include <Utils/Geometry.h>
+#include <Utils/Properties/Thermochemistry/ThermodynamicReferenceState.h>
+
 namespace Scine {
 namespace Utils {
+class MolecularDegreesOfFreedom;
 
 /**
  * @brief Struct containing the single thermochemical properties of interest.
  */
 struct ThermochemicalContainer {
-  double entropy = 0, enthalpy = 0, heatCapacityP = 0, heatCapacityV = 0, gibbsFreeEnergy = 0, zeroPointVibrationalEnergy = 0;
+  double entropy = 0, enthalpy = 0, heatCapacityP = 0, heatCapacityV = 0, gibbsFreeEnergy = 0,
+         zeroPointVibrationalEnergy = 0, partitionFunction = 1.0;
   int symmetryNumber = 1;
   ThermochemicalContainer operator+(const ThermochemicalContainer& rhs) const {
     ThermochemicalContainer result = *this;
@@ -29,6 +33,7 @@ struct ThermochemicalContainer {
     result.heatCapacityV += rhs.heatCapacityV;
     result.gibbsFreeEnergy += rhs.gibbsFreeEnergy;
     result.zeroPointVibrationalEnergy += rhs.zeroPointVibrationalEnergy;
+    result.partitionFunction *= rhs.partitionFunction;
     return result;
   }
   /** @brief Overloaded multiplication for unit conversion. */
@@ -90,13 +95,10 @@ enum class ZPVEInclusion { alreadyIncluded, notIncluded };
  * the standard enthalpy of formation, the system entropy, the heat capacity and the Gibbs' free energy
  * from the results of a vibrational analysis.
  *
- * By default a temperature of 298.15 K and a molecular symmetry number of one are assumed. They can be adapted via
- * the functions setTemperature() and setMolecularSymmetryNumber(), respectively. Using an incorrect symmetry number
- * results into a wrong rotational entropy.
+ * By default a temperature of 298.15 K, a pressure of 1 atm, and a molecular symmetry number of one are assumed.
  */
 class ThermochemistryCalculator {
  public:
-  explicit ThermochemistryCalculator(ElementTypeCollection elements);
   ThermochemistryCalculator(NormalModesContainer normalModesContainer,
                             Geometry::Properties::PrincipalMomentsOfInertia principalMomentsOfInertia,
                             ElementTypeCollection elements, int spinMultiplicity, double electronicEnergy);
@@ -125,7 +127,10 @@ class ThermochemistryCalculator {
    * @param inclusion notIncluded is the standard way, alreadyIncluded is in case of the NDDO semiempirical methods.
    */
   void setZPVEInclusion(ZPVEInclusion inclusion);
-
+  /**
+   * @brief Runt the calculation.
+   * @return The thermochemical information in a container object.
+   */
   ThermochemicalComponentsContainer calculate();
 
   /**
@@ -142,28 +147,21 @@ class ThermochemistryCalculator {
    * I : 60
    */
   void setMolecularSymmetryNumber(int sigma);
+  /**
+   * @brief Getter for the uncerlying molecular degrees of freedom.
+   * @return The degrees of freedom.
+   */
+  const MolecularDegreesOfFreedom& getMolecularDegreesOfFreedom() const;
 
  protected:
-  std::vector<double> getWavenumbers() const;
-  Geometry::Properties::PrincipalMomentsOfInertia principalMomentsOfInertia_;
-  ElementTypeCollection elements_;
-  double temperature_{298.15};
-  // Pressure in Pa. The default is 1 atm.
-  double pressure_{101325.0};
-  int spinMultiplicity_{1};
-  double electronicEnergy_{0};
-  int sigma_{1};
   ZPVEInclusion zpveIncluded{ZPVEInclusion::notIncluded};
 
  private:
-  ThermochemicalContainer calculateVibrationalPart(double temperature) const;
-  ThermochemicalContainer calculateRotationalPart(double temperature) const;
-  ThermochemicalContainer calculateTranslationalPart(double temperature, double pressure) const;
-  ThermochemicalContainer calculateElectronicPart(double temperature) const;
+  ThermodynamicReferenceState referenceState_ = ReferenceStates::StandardStateGas;
+  std::shared_ptr<MolecularDegreesOfFreedom> molecularDegreesOfFreedom_;
   // Sets the symmetry number for diatomic molecules
-  void calculateSigmaForDiatomicMolecule();
   // TODO Automatically determine symmetry for all molecules
-  NormalModesContainer normalModesContainer_{};
+  static unsigned int calculateSigmaForDiatomicMolecule(const ElementTypeCollection& elements);
 };
 
 } // namespace Utils

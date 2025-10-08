@@ -197,6 +197,19 @@ TEST_F(AtomCollectionTest, KeepAtomsByIndex) {
   ASSERT_EQ(atomCollection.size(), 0);
 }
 
+TEST_F(AtomCollectionTest, IsLinear) {
+  ElementTypeCollection elements = {ElementType::C, ElementType::H, ElementType::C, ElementType::H, ElementType::H,
+                                    ElementType::H, ElementType::O, ElementType::C, ElementType::H};
+  PositionCollection positions(9, 3);
+  positions << 0.938762896484108, -0.9175525175169, -0.605669613848674, 0.415727181980825, -2.64992028186956,
+      0.585190686927317, -2.54248163993385, 1.49191199589349, 0.748575452844579, -0.0467408707479779, -1.29929191634321,
+      -2.43926682613569, -3.7171413307336, 0.359865575764032, -0.555032497904497, -3.21830904263596, 3.30421408927868,
+      1.50370509628098, 0.0155402860486483, 1.34789974676989, 0.535323572528889, 3.59252739722614, -1.46770079197334,
+      -0.56979435924053, 4.56211512231162, -0.169425900003087, 0.796968488547608;
+  AtomCollection atoms(elements, positions);
+  EXPECT_FALSE(atoms.isLinear());
+}
+
 } /* namespace Tests */
 } /* namespace Utils */
 } /* namespace Scine */

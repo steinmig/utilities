@@ -8,6 +8,29 @@ It is intended that only the first two groups (``New Features and Feature Update
 ``Important Technical Changes``) are important for the average user, while
 the last one is mainly aimed at developers and users that link deeply into the code.
 
+Release 10.1.0
+--------------
+
+Important Technical Changes
+...........................
+- Improve support for compilation on Windows (MSVC)
+- Objects for typical standard states (gas/liquid phase) are now available.
+- Added Python bindings for some of the properties.
+- Added support for Orca 6.0.1
+- Added `file_paths` as result after Turbomole calculations. This map will contain the most important paths to
+  Turbomole output files.
+- Fixed a bug where local coupled cluster calculations with Orca and systems containing less than 2 electrons would crash. The calculator now invokes HF to avoid this problem.
+
+New Features and Feature Updates
+................................
+- Enabled loading of calculator with AtomCollection
+- Implementation of a statistical thermodynamics framework to calculate densities and sum of states
+ and other thermodynamic functions.
+- RRKM rate constants are now available.
+- Added SQ submodule to handle problems posed in the second quantized formalism. Python bindings for this submodule have also been added.
+- Enabled CIS calcuations with NDDO-based Hamiltonians.
+
+
 Release 10.0.0
 --------------
 

@@ -60,12 +60,29 @@ struct EigenContainer {
   Eigen::MatrixXd eigenVectors;
 };
 /**
- * @brief Data structure to store the results of an excited states calculation.
+ * @brief Data structure to store the results of a CIS excited states calculation.
  */
 struct ElectronicTransitionResult {
   EigenContainer eigenStates;
   Eigen::Matrix3Xd transitionDipoles;
-  Eigen::VectorXd spinContamination;
+  Eigen::VectorXd multiplicities;
+};
+
+/**
+ * @brief Data structure to store the results of a CI excited states calculation.
+ */
+struct ElectronicCIResult {
+  EigenContainer eigenStates;
+  std::vector<double> oscillatorStrengths;
+  Eigen::VectorXd spinSquared;
+
+  ElectronicCIResult(const ElectronicCIResult& other) {
+    eigenStates = other.eigenStates;
+    oscillatorStrengths = other.oscillatorStrengths;
+    spinSquared = other.spinSquared;
+  }
+
+  ElectronicCIResult() = default;
 };
 
 /**
@@ -76,6 +93,27 @@ struct SpinAdaptedElectronicTransitionResult {
   std::shared_ptr<ElectronicTransitionResult> singlet;
   std::shared_ptr<ElectronicTransitionResult> triplet;
   std::vector<std::string> transitionLabels;
+  std::shared_ptr<ElectronicCIResult> ciResult;
+
+  SpinAdaptedElectronicTransitionResult() = default;
+  SpinAdaptedElectronicTransitionResult(const SpinAdaptedElectronicTransitionResult& other) {
+    unrestricted = other.unrestricted;
+    singlet = other.singlet;
+    triplet = other.triplet;
+    transitionLabels = other.transitionLabels;
+    ciResult = other.ciResult;
+  }
+
+  SpinAdaptedElectronicTransitionResult(std::shared_ptr<ElectronicTransitionResult> un,
+                                        std::shared_ptr<ElectronicTransitionResult> sing,
+                                        std::shared_ptr<ElectronicTransitionResult> trip,
+                                        std::vector<std::string> labels, std::shared_ptr<ElectronicCIResult> ci) {
+    unrestricted = un;
+    singlet = sing;
+    triplet = trip;
+    transitionLabels = labels;
+    ciResult = ci;
+  }
 };
 
 /**

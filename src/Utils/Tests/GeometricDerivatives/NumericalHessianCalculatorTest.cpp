@@ -6,9 +6,9 @@
  */
 #include "Utils/GeometricDerivatives/NumericalHessianCalculator.h"
 #include "Utils/GeometryOptimization/IrcOptimizer.h"
-#include "Utils/MSVCCompatibility.h"
 #include <Core/Interfaces/Calculator.h>
 #include <Utils/CalculatorBasics.h>
+#include <Utils/MSVCCompatibility.h>
 #include <Utils/Math/AutomaticDifferentiation/AutomaticDifferentiationHelpers.h>
 #include <Utils/Math/AutomaticDifferentiation/MethodsHelpers.h>
 #include <Utils/Math/AutomaticDifferentiation/VectorDerivatives3D.h>

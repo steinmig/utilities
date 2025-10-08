@@ -7,7 +7,8 @@ import importlib.util
 import os
 import sys
 from pathlib import Path
-from distutils import ccompiler, sysconfig
+from setuptools._distutils import ccompiler
+import sysconfig
 
 
 # Step 1: Load the python bindings

@@ -10,7 +10,7 @@ namespace Scine {
 namespace Utils {
 namespace Integrals {
 
-int BasisSet::_idProvider = 0;
+int UTILOS_EXPORT BasisSet::_idProvider = 0;
 
 std::vector<long> BasisSet::shellToAtom(const AtomCollection& atoms) const {
   return shellToAtom(*this, atoms, false);

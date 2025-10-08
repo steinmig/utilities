@@ -22,6 +22,7 @@
 #include "Utils/Solvation/ImplicitSolvation.h"
 #include <stdlib.h>
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/process.hpp>
 
 namespace bp = boost::process;
@@ -86,7 +87,7 @@ void TurbomoleCalculator::initializeProgram() {
     turbomoleSmpBinaryDir_ = NativeFilenames::combinePathSegments(turboRootEnv, "bin", smpArchitecture);
     turbomoleScriptsDir_ = NativeFilenames::combinePathSegments(turboRootEnv, "scripts");
     std::string newPath = turbomoleScriptsDir_ + ":" + std::getenv("PATH");
-    setenv("PATH", newPath.c_str(), 1);
+    SetEnv_("PATH", newPath.c_str());
     binaryHasBeenChecked_ = true;
   }
   else
@@ -195,11 +196,11 @@ const Results& TurbomoleCalculator::calculate(std::string description) {
 }
 
 const Results& TurbomoleCalculator::calculateImpl(std::string description) {
-  int nElectrons = 0;
-  for (const auto& e : atoms_.getElements()) {
-    nElectrons += static_cast<int>(ElementInfo::Z(e));
+  int nElectrons = atoms_.nNeutralElectrons() - settings_->getInt(Utils::SettingsNames::molecularCharge);
+  if (nElectrons < 0) {
+    throw std::runtime_error("A negative number of electrons is not supported");
   }
-  if ((nElectrons - settings_->getInt(Utils::SettingsNames::molecularCharge)) <= 0) {
+  else if (nElectrons == 0) {
     results_ = CalculationRoutines::calculateZeroElectrons(atoms_, requiredProperties_);
     return results_;
   }
@@ -347,6 +348,7 @@ const Results& TurbomoleCalculator::calculateImpl(std::string description) {
     auto thermochemistry = thermoCalc.calculate();
     results_.set<Property::Thermochemistry>(thermochemistry);
   }
+  results_.set<Property::FilePaths>(files_.getMap());
   results_.set<Property::SuccessfulCalculation>(true);
   results_.set<Property::ProgramName>("turbomole");
 

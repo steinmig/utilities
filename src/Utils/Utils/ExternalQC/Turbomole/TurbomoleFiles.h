@@ -10,6 +10,7 @@
 
 #include "Utils/IO/NativeFilenames.h"
 #include <string>
+#include <unordered_map>
 
 namespace Scine {
 namespace Utils {
@@ -36,6 +37,24 @@ struct TurbomoleFiles {
   std::string coordFile;
   std::string solvationInputFile;
   std::string escfFile;
+
+  std::unordered_map<std::string, std::string> getMap() {
+    std::unordered_map<std::string, std::string> files({
+        {"directory", filenameBase},
+        {"coord", coordFile},
+        {"define_input_file", defineInputFile},
+        {"alpha_file", alphaFile},
+        {"beta_file", betaFile},
+        {"mos_file", mosFile},
+        {"control_file", controlFile},
+        {"energyFile", energyFile},
+        {"hessianFile", hessianFile},
+        {"gradientFile", gradientFile},
+        {"pointChargesFile", pointChargesFile},
+        {"pointChargeGradientFile", pointChargeGradientFile},
+    });
+    return files;
+  }
 };
 
 inline void setCorrectTurbomoleFileNames(TurbomoleFiles& files, const std::string workingDirectory) {

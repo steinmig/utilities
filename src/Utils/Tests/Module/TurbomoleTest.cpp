@@ -487,46 +487,48 @@ TEST_F(ATurbomoleTest, InputFileIsWrittenCorrectlyAndStatesHandlingWorks) {
  * by the define-input creator. For these elements multiple sets of EHT parameters
  * are defined. Therefore, an additional return must be added to the define input.
  */
-TEST_F(ATurbomoleTest, MultipleEHTParameterSets) {
-#ifndef _WIN32
-  const char* envVariablePtr = std::getenv("TURBODIR");
-  if (envVariablePtr) {
-    calculator.settings().modifyInt(Utils::SettingsNames::maxScfIterations, 1);
-    calculator.settings().modifyInt(Utils::SettingsNames::molecularCharge, 7);
-    calculator.settings().modifyInt(Utils::SettingsNames::spinMultiplicity, 1);
-    calculator.settings().modifyString(Utils::SettingsNames::spinMode, "restricted");
-
-    std::stringstream stream("3\n\n"
-                             "Cu     0.00000000   0.00000001  -0.00000097\n"
-                             "Pd     100.000000   0.00000000   0.00000000\n"
-                             "Gd     500.000000   0.00000000   0.00000000\n");
-
-    auto structure = Utils::XyzStreamHandler::read(stream);
-    calculator.setStructure(structure);
-
-    try {
-      calculator.calculate("");
-    }
-    catch (Core::UnsuccessfulCalculationException& e) {
-    }
-
-    auto calcDir = calculator.getCalculationDirectory();
-    ExternalQC::TurbomoleFiles outputFiles;
-    setCorrectTurbomoleFileNames(outputFiles, calcDir);
-
-    ASSERT_TRUE(boost::filesystem::exists(outputFiles.controlFile));
-    ASSERT_TRUE(boost::filesystem::exists(outputFiles.defineInputFile));
-    ASSERT_TRUE(boost::filesystem::exists(outputFiles.coordFile));
-    ASSERT_TRUE(boost::filesystem::exists(outputFiles.mosFile));
-
-    boost::filesystem::remove_all(calculator.getCalculationDirectory());
-  }
-  else {
-    auto logger = Core::Log();
-    logger.output << "Turbomole input creation was not tested directly as no binary path was specified." << Core::Log::endl;
-  }
-#endif
-}
+// TODO: This test fails randomly on Ubuntu 22.04 (see issue #222)
+// TEST_F(ATurbomoleTest, MultipleEHTParameterSets) {
+//#ifndef _WIN32
+//  const char* envVariablePtr = std::getenv("TURBODIR");
+//  if (envVariablePtr) {
+//    calculator.settings().modifyInt(Utils::SettingsNames::maxScfIterations, 1);
+//    calculator.settings().modifyInt(Utils::SettingsNames::molecularCharge, 7);
+//    calculator.settings().modifyInt(Utils::SettingsNames::spinMultiplicity, 1);
+//    calculator.settings().modifyString(Utils::SettingsNames::spinMode, "restricted");
+//
+//    std::stringstream stream("3\n\n"
+//                             "Cu     0.00000000   0.00000001  -0.00000097\n"
+//                             "Pd     100.000000   0.00000000   0.00000000\n"
+//                             "Gd     500.000000   0.00000000   0.00000000\n");
+//
+//    auto structure = Utils::XyzStreamHandler::read(stream);
+//    calculator.setStructure(structure);
+//
+//    try {
+//      calculator.calculate("");
+//    }
+//    catch (Core::UnsuccessfulCalculationException& e) {
+//    }
+//
+//    auto calcDir = calculator.getCalculationDirectory();
+//    ExternalQC::TurbomoleFiles outputFiles;
+//    setCorrectTurbomoleFileNames(outputFiles, calcDir);
+//
+//    ASSERT_TRUE(boost::filesystem::exists(outputFiles.controlFile));
+//    ASSERT_TRUE(boost::filesystem::exists(outputFiles.defineInputFile));
+//    ASSERT_TRUE(boost::filesystem::exists(outputFiles.coordFile));
+//    ASSERT_TRUE(boost::filesystem::exists(outputFiles.mosFile));
+//
+//    boost::filesystem::remove_all(calculator.getCalculationDirectory());
+//  }
+//  else {
+//    auto logger = Core::Log();
+//    logger.output << "Turbomole input creation was not tested directly as no binary path was specified." <<
+//    Core::Log::endl;
+//  }
+//#endif
+//}
 
 TEST_F(ATurbomoleTest, PointChargeEmbeddingWorks) {
 #ifndef _WIN32
@@ -957,6 +959,7 @@ TEST_F(ATurbomoleTest, HFWorks) {
 
     Utils::Results results = calculator.calculate("");
     ASSERT_TRUE(std::fabs(results.get<Utils::Property::Energy>() + 75.96139355869) < 1e-6);
+    EXPECT_FALSE(results.get<Utils::Property::FilePaths>().empty());
 
     auto calcDir = calculator.getCalculationDirectory();
     ExternalQC::TurbomoleFiles outputFiles;

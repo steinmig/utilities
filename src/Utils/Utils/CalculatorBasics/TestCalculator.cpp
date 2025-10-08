@@ -183,5 +183,9 @@ double TestCalculator::truncateOff(double value) {
   return std::trunc(value * factor_10) / factor_10;
 }
 
+bool TestCalculator::allowsPythonGILRelease() const {
+  return false;
+}
+
 } // namespace Utils
 } // namespace Scine

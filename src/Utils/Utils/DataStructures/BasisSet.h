@@ -11,6 +11,7 @@
 #include <Utils/DataStructures/Shell.h>
 #include <Utils/DataStructures/ShellPairs.h>
 #include <Utils/Geometry/AtomCollection.h>
+#include <Utils/MSVCCompatibility.h>
 #include <memory>
 #include <utility>
 
@@ -35,7 +36,7 @@ class BasisSet : public std::vector<Shell> {
 
  private:
   std::size_t _id; // id is used for efficient comparison of two BasisSet objects.
-  static int _idProvider;
+  static UTILOS_EXPORT int _idProvider;
   std::shared_ptr<ShellPairs> _shellPairs;
   bool _shellPairsEvaluated = false;
   bool _isPureSpherical;

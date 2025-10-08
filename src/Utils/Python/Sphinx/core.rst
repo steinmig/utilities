@@ -27,6 +27,12 @@ Calculator
 
 .. autofunction:: scine_utilities.core.load_system_into_calculator
 
+CalculatorWithReference
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: scine_utilities.core.CalculatorWithReference
+
+
 Logging
 -------
 

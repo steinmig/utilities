@@ -66,6 +66,25 @@ struct ScfMixers {
   static constexpr const char* ediisDiis = "ediis_diis";
 };
 
+/// Complete Active Space Options
+static constexpr const char* dumpIntegralsOption = "fcidump_dump_integrals";
+static constexpr const char* fcidumpFilenameOption = "fcidump_filename";
+// UNO-CI
+static constexpr const char* casWithUnoCI = "cas_auto";
+static constexpr const char* unoCiLowThresholdOption = "uno_low_occupation_threshold";
+// If true, does not try to project back in canonical orbitals
+static constexpr const char* forceUnoCICalcualation = "force_uno_ci";
+// Cas space specifications
+static constexpr const char* casOrbitalsAroundFermiOption = "cas_orbitals_around_fermi";
+static constexpr const char* casOrbitalIndicesOption = "cas_orbitals_lists";
+// Double excitations inside CAS if not CAS-CI
+static constexpr const char* doublesAroundFermiOption = "excitation_cas_orbitals_around_fermi";
+static constexpr const char* doublesIndicesOption = "excitation_cas_orbitals_lists";
+// References in MR-CISD
+static constexpr const char* referencesAroundFermiOption = "reference_cas_orbitals_around_fermi";
+static constexpr const char* referencesIndicesOption = "reference_cas_orbitals_lists";
+static constexpr const char* referenceFromDoubleExcitations = "reference_from_doubles";
+
 //! @@brief Settings for linear response time dependent methods.
 static constexpr const char* maxDavidsonIterations = "max_davidson_iterations";
 //! @@brief Path to the excited states parameter file

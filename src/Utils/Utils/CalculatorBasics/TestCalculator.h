@@ -65,6 +65,7 @@ class TestCalculator : public CloneInterface<TestCalculator, Core::Calculator>, 
   std::unique_ptr<Utils::AtomCollection> getStructure() const final;
   void generateWavefunctionInformation(const std::string& out) final;
   void generateWavefunctionInformation(std::ostream& out) final;
+  bool allowsPythonGILRelease() const final;
   /**
    * @brief Set the precision of the calculator.
    * @param value The exponent to the expression 10^(-value).
@@ -75,13 +76,6 @@ class TestCalculator : public CloneInterface<TestCalculator, Core::Calculator>, 
    * @return The precision set for the calculator
    */
   double getPrecision();
-  /**
-   * @brief Whether the calculator has no underlying Python code and can therefore
-   * release the global interpreter lock in Python bindings
-   */
-  bool allowsPythonGILRelease() const override {
-    return true;
-  };
 
  private:
   PropertyList _requiredProperties{};

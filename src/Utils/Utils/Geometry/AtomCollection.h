@@ -259,6 +259,17 @@ class AtomCollection {
    *         removing.
    */
   std::vector<unsigned int> keepAtomsByIndices(const std::vector<unsigned int>& atomsToKeep);
+  /**
+   * @brief Check if the molecule is linear (all difference vectors are linear dependent up to 1e-3).
+   * @return True if linear. Otherwise, false.
+   */
+  bool isLinear() const;
+
+  /**
+   * @brief Get the number of electrons in the neutral system.
+   * @return The number of electrons assuming no charge or pseudo potential.
+   */
+  unsigned int nNeutralElectrons() const;
 
  private:
   ElementTypeCollection elements_;

@@ -487,8 +487,7 @@ void init_element_type(pybind11::module& m) {
       [](const pybind11::object o) -> std::string {
         // Generate a qualified literal for the enum: ElementType.H1
         auto typehandle = pybind11::type::handle_of(o);
-        auto qualifiedName =
-            typehandle.attr("__qualname__").cast<std::string>() + "." + o.attr("name")().cast<std::string>();
+        auto qualifiedName = typehandle.attr("__qualname__").cast<std::string>() + "." + o.attr("name").cast<std::string>();
         return qualifiedName;
       },
       pybind11::prepend());

@@ -17,6 +17,7 @@
 #include "Utils/Properties/Thermochemistry/ThermochemistryCalculator.h"
 #include "Utils/Scf/LcaoUtils/SpinMode.h"
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/process.hpp>
 #include <regex>
 

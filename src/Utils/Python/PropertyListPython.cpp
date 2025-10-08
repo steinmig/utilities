@@ -31,6 +31,7 @@ void init_property_list(pybind11::module& m) {
   property.value("OverlapMatrix", Property::OverlapMatrix);
   property.value("CoefficientMatrix", Property::CoefficientMatrix);
   property.value("OrbitalEnergies", Property::OrbitalEnergies);
+  property.value("ElectronicOccupation", Property::ElectronicOccupation);
   property.value("BondOrderMatrix", Property::BondOrderMatrix);
   property.value("Thermochemistry", Property::Thermochemistry);
   property.value("MoessbauerParameter", Property::MoessbauerParameter);
@@ -46,6 +47,10 @@ void init_property_list(pybind11::module& m) {
   property.value("SuccessfulCalculation", Property::SuccessfulCalculation);
   property.value("ProgramName", Property::ProgramName);
   property.value("OrbitalFragmentPopulations", Property::OrbitalFragmentPopulations);
+  property.value("SQSpecifier", Property::SQSpecifier);
+  property.value("RepulsionEnergy", Property::RepulsionEnergy);
+  property.value("NAlphaElectrons", Property::NAlphaElectrons);
+  property.value("NBetaElectrons", Property::NBetaElectrons);
 
   pybind11::class_<PropertyList> property_list(m, "PropertyList");
   property_list.def(pybind11::init<>(), "Empty-initialize");

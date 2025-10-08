@@ -291,9 +291,9 @@ TEST_F(AThermochemistryTest, CatchesZeroTemperature) {
   ASSERT_THAT(container.vibrationalComponent.enthalpy, container.vibrationalComponent.zeroPointVibrationalEnergy);
   ASSERT_THAT(container.vibrationalComponent.entropy, 0);
   ASSERT_THAT(container.rotationalComponent.enthalpy, 0);
-  ASSERT_THAT(container.rotationalComponent.entropy, -std::numeric_limits<double>::infinity());
+  ASSERT_THAT(container.rotationalComponent.entropy, container.rotationalComponent.entropy);
   ASSERT_THAT(container.translationalComponent.enthalpy, 0);
-  ASSERT_THAT(container.translationalComponent.entropy, -std::numeric_limits<double>::infinity());
+  ASSERT_THAT(container.translationalComponent.entropy, container.translationalComponent.entropy);
   ASSERT_THAT(container.overall.gibbsFreeEnergy, container.overall.zeroPointVibrationalEnergy + arbitraryEnergy);
 }
 

@@ -15,6 +15,7 @@
 #include <Utils/DataStructures/DipoleMatrix.h>
 #include <Utils/DataStructures/MolecularOrbitals.h>
 #include <Utils/DataStructures/PartialHessian.h>
+#include <Utils/DataStructures/SecondQuantization/SQSpecifier.h>
 #include <Utils/DataStructures/SingleParticleEnergies.h>
 #include <Utils/DataStructures/SpinAdaptedMatrix.h>
 #include <Utils/ExternalQC/Orca/MoessbauerParameters.h>
@@ -37,7 +38,7 @@ namespace Utils {
  *  The total number of possible properties can be increased from 64 by changing the data
  *  type to a wrapped implementation of a std::bitset, see https://fschoenberger.dev/enum-bitset/
  *  for an example. Note that you have to be careful with the bit shift operations here.
- *  If you do (1 << 31) you get an integer overflow because 1 is only a unsigned int. You have to
+ *  If you do (1 << 31) you get an integer overflow because 1 is only an unsigned int. You have to
  *  do (1ULL << 31) to ensure that 1 is actually an unsigned long long.
  *
  *  See also ResultsPython.cpp for more bit shift operations.
@@ -75,10 +76,15 @@ enum class Property : unsigned long long {
   MoessbauerParameter = (1ULL << 28),
   PartialEnergies = (1ULL << 29),
   PartialGradients = (1ULL << 30),
-  OrbitalFragmentPopulations = (1ULL << 31)
+  OrbitalFragmentPopulations = (1ULL << 31),
+  NAlphaElectrons = (1ULL << 32),
+  NBetaElectrons = (1ULL << 33),
+  SQSpecifier = (1ULL << 34),
+  RepulsionEnergy = (1ULL << 35),
+  FilePaths = (1ULL << 36)
 };
 
-constexpr int N_PROPERTIES = 32;
+constexpr int N_PROPERTIES = 37;
 
 // clang-format off
 using PropertyTypeTuple =
@@ -114,7 +120,12 @@ using PropertyTypeTuple =
     ExternalQC::Moessbauer::MoessbauerParameterContainer, /*Property::MoessbauerParameter*/
     std::unordered_map<std::string, double>, /*Property::PartialEnergies*/
     std::unordered_map<std::string, GradientCollection>, /*Property::PartialGradients*/
-    SpinAdaptedMatrix /*Property::OrbitalFragmentPopulations*/
+    SpinAdaptedMatrix, /*Property::OrbitalFragmentPopulations*/
+    unsigned int, /*Property::NAlphaElectrons*/
+    unsigned int, /*Property::NBetaElectrons*/
+    SecondQuantization::Specifier, /*Property::SQSpecifier*/
+    double, /*Property::RepulsionEnergy*/
+    std::unordered_map<std::string, std::string> /*Property::FilePaths*/
     >;
 // clang-format on
 
@@ -152,12 +163,18 @@ constexpr std::array<Property, N_PROPERTIES> allProperties{{Property::Energy,
                                                             Property::MoessbauerParameter,
                                                             Property::PartialEnergies,
                                                             Property::PartialGradients,
-                                                            Property::OrbitalFragmentPopulations}};
+                                                            Property::OrbitalFragmentPopulations,
+                                                            Property::NAlphaElectrons,
+                                                            Property::NBetaElectrons,
+                                                            Property::SQSpecifier,
+                                                            Property::RepulsionEnergy,
+                                                            Property::FilePaths}};
 
 static_assert(std::tuple_size<decltype(allProperties)>::value == N_PROPERTIES,
               "allProperties does not contain as many elements as there are properties");
 
 // Python binding names
+
 constexpr std::array<const char*, std::tuple_size<PropertyTypeTuple>::value> allPropertyNames{
     "energy",
     "gradients",
@@ -190,7 +207,12 @@ constexpr std::array<const char*, std::tuple_size<PropertyTypeTuple>::value> all
     "moessbauer_parameter",
     "partial_energies",
     "partial_gradients",
-    "orbital_fragment_populations"};
+    "orbital_fragment_populations",
+    "n_alpha_electrons",
+    "n_beta_electrons",
+    "sq_specifier",
+    "repulsion_energy",
+    "file_paths"};
 
 static_assert(std::tuple_size<decltype(allPropertyNames)>::value == N_PROPERTIES,
               "allPropertyNames does not contain as many elements as there are properties");

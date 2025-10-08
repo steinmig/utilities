@@ -17,7 +17,7 @@ void init_dipole_matrix(pybind11::module& m) {
    * a pain.
    */
 
-  dipole_matrix.def("__len__", [](const DipoleMatrix & /* mat */) -> unsigned { return 3; });
+  dipole_matrix.def("__len__", [](const DipoleMatrix& /* mat */) -> unsigned { return 3; });
 
   dipole_matrix.def("__getitem__",
                     [](const DipoleMatrix& mat, const unsigned i) -> const Eigen::MatrixXd& { return mat[i]; });

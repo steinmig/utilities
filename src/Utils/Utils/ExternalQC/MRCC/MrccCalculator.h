@@ -137,6 +137,8 @@ class MrccCalculator : public CloneInterface<Scine::Utils::Abstract<MrccCalculat
     return true;
   };
 
+  void sanityChecks();
+
  private:
   void applySettings();
   const Results& calculateImpl(std::string description);

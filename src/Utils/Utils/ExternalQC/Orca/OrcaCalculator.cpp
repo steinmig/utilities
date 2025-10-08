@@ -19,6 +19,7 @@
 #include "Utils/Properties/Thermochemistry/ThermochemistryCalculator.h"
 #include "Utils/Scf/LcaoUtils/SpinMode.h"
 #include "Utils/Solvation/ImplicitSolvation.h"
+#include <boost/filesystem.hpp>
 #include <boost/process.hpp>
 #include <regex>
 
@@ -157,11 +158,11 @@ const Results& OrcaCalculator::calculate(std::string description) {
 }
 
 const Results& OrcaCalculator::calculateImpl(std::string description) {
-  int nElectrons = 0;
-  for (const auto& e : atoms_.getElements()) {
-    nElectrons += static_cast<int>(ElementInfo::Z(e));
+  int nElectrons = atoms_.nNeutralElectrons() - settings_->getInt(Utils::SettingsNames::molecularCharge);
+  if (nElectrons < 0) {
+    throw std::runtime_error("A negative number of electrons is not supported");
   }
-  if ((nElectrons - settings_->getInt(Utils::SettingsNames::molecularCharge)) <= 0) {
+  else if (nElectrons == 0) {
     results_ = CalculationRoutines::calculateZeroElectrons(atoms_, requiredProperties_);
     return results_;
   }
@@ -184,7 +185,7 @@ const Results& OrcaCalculator::calculateImpl(std::string description) {
   bfs::remove(outputFile);
 
   // Execute Orca command
-  externalProgram.executeCommand(orcaExecutable_ + " " + inputFile, outputFile);
+  externalProgram.executeCommand(orcaExecutable_ + " " + inputFile + " \"--oversubscribe\"", outputFile);
 
   OrcaMainOutputParser parser(outputFile);
   parser.checkForErrors();

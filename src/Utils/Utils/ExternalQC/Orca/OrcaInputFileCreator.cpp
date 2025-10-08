@@ -39,13 +39,22 @@ void OrcaInputFileCreator::createInputFile(std::ostream& out, const AtomCollecti
 
 void OrcaInputFileCreator::printCalculationType(std::ostream& out, const AtomCollection& atoms,
                                                 const Settings& settings, const PropertyList& requiredProperties) {
-  const std::string basisSet = settings.getString(Utils::SettingsNames::basisSet);
+  const int charge = settings.getInt(Scine::Utils::SettingsNames::molecularCharge);
+  // We check for <= 0 electrons in OrcaCalculator::calculateImpl
+  const bool noCorrelation = (atoms.nNeutralElectrons() - charge) < 2;
   auto methodInput = Scine::Utils::CalculationRoutines::splitIntoMethodAndDispersion(
       settings.getString(Scine::Utils::SettingsNames::method));
+  bool correlatedCalculation = boost::to_upper_copy<std::string>(methodInput.first).find("CC") != std::string::npos ||
+                               boost::to_upper_copy<std::string>(methodInput.first).find("MP2") != std::string::npos ||
+                               boost::to_upper_copy<std::string>(methodInput.first).find("DLPNO") != std::string::npos;
+  const std::string basisSet = settings.getString(Utils::SettingsNames::basisSet);
+  if (noCorrelation && correlatedCalculation) {
+    methodInput = {"HF", ""};
+    correlatedCalculation = false;
+  }
   out << "! " << methodInput.first << " " << methodInput.second << " " << basisSet << std::endl;
 
-  if ((boost::to_upper_copy<std::string>(methodInput.first).find("DLPNO") != std::string::npos) ||
-      (boost::to_upper_copy<std::string>(methodInput.first).find("CC") != std::string::npos)) {
+  if (correlatedCalculation) {
     auto auxCBasisSet = settings.getString(Scine::Utils::ExternalQC::SettingsNames::orcaAuxCBasisSet);
     if (!auxCBasisSet.empty()) {
       out << "! " << auxCBasisSet << "/C" << std::endl;

@@ -5,6 +5,7 @@
  *            See LICENSE.txt for details.
  */
 
+#include <Utils/Properties/Thermochemistry/MolecularDegreesOfFreedom.h>
 #include <Utils/Properties/Thermochemistry/ThermochemistryCalculator.h>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
@@ -33,6 +34,7 @@ void init_thermochemical_calculator(pybind11::module& m) {
       pybind11::init<const PartialHessian&, ElementTypeCollection, const PositionCollection&, int, double>(),
       pybind11::arg("hessian"), pybind11::arg("elements"), pybind11::arg("positions"), pybind11::arg("multiplicity"),
       pybind11::arg("energy"), "Initialize a thermochemistry calculator");
+  thermochemistryCalculator.def("get_molecular_degrees_of_freedom", &ThermochemistryCalculator::getMolecularDegreesOfFreedom);
   thermochemistryCalculator.def("set_temperature", &ThermochemistryCalculator::setTemperature);
   thermochemistryCalculator.def("set_pressure", &ThermochemistryCalculator::setPressure);
   thermochemistryCalculator.def("set_molecular_symmetry", &ThermochemistryCalculator::setMolecularSymmetryNumber);

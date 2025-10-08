@@ -49,6 +49,15 @@ def test_position_access():
     assert numpy.array_equal(a[0].position, pos_a)
     assert numpy.array_equal(a[-2].position, pos_a)
 
+def test_is_linear():
+    pos_a = numpy.array([0.0, 1.0, 2.0])
+    pos_b = numpy.array([1.0, 2.0, 3.0])
+    a = scine.AtomCollection(2)
+    a.positions = [pos_a, pos_b]
+    assert a.is_linear()
+
+    a.push_back(scine.Atom(scine.ElementType.H, p=numpy.array([0.0, 0.0, 0.0])))
+    assert not a.is_linear()
 
 def test_vector_functions():
     a = scine.AtomCollection()

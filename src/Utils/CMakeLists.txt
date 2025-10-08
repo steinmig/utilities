@@ -1,6 +1,7 @@
 file(GLOB_RECURSE UTILS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Utils/*.h)
 file(GLOB_RECURSE UTILS_CPPS ${CMAKE_CURRENT_SOURCE_DIR}/Utils/*.cpp)
 
+
 file(GLOB UTILS_MODULE_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Module/*.h)
 file(GLOB UTILS_MODULE_CPPS ${CMAKE_CURRENT_SOURCE_DIR}/Module/*.cpp)
 
@@ -115,15 +116,14 @@ scine_install_component_cmake_files(
 if(SCINE_BUILD_TESTS)
   add_executable(UtilsOS_tests ${UTILS_TEST_CPPS})
   target_link_libraries(UtilsOS_tests PRIVATE
-    GTest::Main
-    GMock::GMock
+    GTest::gmock_main
     UtilsOS
     Scine::Core
     yaml-cpp
     ${CMAKE_DL_LIBS}
     $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>
   )
-  target_include_directories(UtilsOS_tests PRIVATE ${YAML_CPP_INCLUDE_DIR})
+  target_include_directories(UtilsOS_tests PRIVATE $<BUILD_INTERFACE:${YAML_CPP_INCLUDE_DIR}>)
   add_test(
     NAME UtilsOSTests
     COMMAND UtilsOS_tests --gtest_output=xml:gtest_report.xml
@@ -155,7 +155,7 @@ if(SCINE_BUILD_PYTHON_BINDINGS)
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
   )
   target_link_libraries(scine_utilities PRIVATE Scine::UtilsOS Scine::Core yaml-cpp)
-  target_include_directories(scine_utilities PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Python ${YAML_CPP_INCLUDE_DIR})
+  target_include_directories(scine_utilities PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Python> $<BUILD_INTERFACE:${YAML_CPP_INCLUDE_DIR}>)
 
   install(CODE
     "execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --prefix=${CMAKE_INSTALL_PREFIX} --upgrade ${CMAKE_CURRENT_BINARY_DIR}

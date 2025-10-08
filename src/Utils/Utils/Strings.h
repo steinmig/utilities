@@ -21,7 +21,7 @@ namespace Utils {
  * @param b The second string
  * @return Whether they are equal
  */
-static bool caseInsensitiveEqual(const std::string& a, const std::string& b) {
+inline static bool caseInsensitiveEqual(const std::string& a, const std::string& b) {
   return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) { return tolower(a) == tolower(b); });
 }
 
@@ -31,7 +31,7 @@ static bool caseInsensitiveEqual(const std::string& a, const std::string& b) {
  * @param line The string to be split
  * @return The vector of strings in the line, no entry can be a blank space
  */
-static std::vector<std::string> splitOnSpaceWithoutResultingSpace(const std::string& line) {
+inline static std::vector<std::string> splitOnSpaceWithoutResultingSpace(const std::string& line) {
   std::vector<std::string> lineSplitted;
   boost::split(lineSplitted, line, boost::is_any_of(" "), boost::token_compress_on);
   std::vector<std::string> strippedResult;

@@ -12,6 +12,7 @@
 #include "AutomaticDifferentiationTypesHelper.h"
 #include "TypeDefinitions.h"
 #include <Eigen/Core>
+#include <iostream>
 
 /**
  *
@@ -189,6 +190,11 @@ template<>
 inline First3D toRSquared<DerivativeOrder::One>(double x, double y, double z) {
   return {x * x + y * y + z * z, 2 * x, 2 * y, 2 * z};
 }
+
+inline std::ostream& operator<<(std::ostream& os, const First3D& rhs) {
+  os << "Value: " << rhs.value() << ", derivatives: " << rhs.derivatives() << std::endl;
+  return os;
+}
 template<>
 inline First3D get3Dfrom1D<DerivativeOrder::One>(First1D v, const Eigen::Vector3d& R) {
   Eigen::Vector3d normalizedR = R.normalized();
@@ -238,6 +244,11 @@ inline Second3D toZ<DerivativeOrder::Two>(double z) {
 template<>
 inline Second3D toRSquared<DerivativeOrder::Two>(double x, double y, double z) {
   return {x * x + y * y + z * z, 2 * x, 2 * y, 2 * z, 2, 2, 2, 0, 0, 0};
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Second3D& rhs) {
+  os << "Value: " << rhs.value() << ", derivatives: " << rhs.dx() << ", " << rhs.dy() << ", " << rhs.dz() << std::endl;
+  return os;
 }
 template<>
 inline Second3D get3Dfrom1D<DerivativeOrder::Two>(Second1D v, const Eigen::Vector3d& R) {

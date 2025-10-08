@@ -300,7 +300,7 @@ TEST_F(XyzStreamHandlerTest, AsignQCorrectlyNuclearElectronic) {
 TEST_F(XyzStreamHandlerTest, ReadFileWithAbsoluteLargeCoordinates) {
   const boost::filesystem::path pathToResource =
       boost::dll::program_location().parent_path() / "Resources/large_coordinates.xyz";
-  std::ifstream input(pathToResource);
+  std::ifstream input(pathToResource.string());
   auto atoms = XyzStreamHandler::read(input);
   input.close();
   std::string temporaryFilePath = "temporaryXYZFile.xyz";

@@ -51,6 +51,10 @@ public:
     order_ = o;
   }
 
+  DerivativeOrder getOrder() const {
+    return order_;
+  }
+
   //TODO: ASSERTS IF WRONG ORDER IS CALLED
   Der0& v0(int i1, int i2) { return val(i1, i2); }
   Der1& v1(int i1, int i2) { return der(i1, i2); }

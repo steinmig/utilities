@@ -4,7 +4,7 @@
  *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.\n
  *            See LICENSE.txt for details.
  */
-#include "Utils/MSVCCompatibility.h"
+#include <Utils/MSVCCompatibility.h>
 #include <Utils/Technical/UniqueIdentifier.h>
 #include <gmock/gmock.h>
 

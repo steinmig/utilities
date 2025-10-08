@@ -5,10 +5,10 @@
  *            See LICENSE.txt for details.
  */
 
-#include "Utils/MSVCCompatibility.h"
 #include <Utils/Dftd3/Dftd3.h>
 #include <Utils/Geometry/GeometryUtilities.h>
 #include <Utils/IO/ChemicalFileFormats/XyzStreamHandler.h>
+#include <Utils/MSVCCompatibility.h>
 #include <Utils/Math/MachineLearning/ChemicalRepresentations/AtomicForcesManager.h>
 #include <gmock/gmock.h>
 

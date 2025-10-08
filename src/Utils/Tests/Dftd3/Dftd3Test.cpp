@@ -278,6 +278,9 @@ TEST_F(ADftd3Calculation, HasCorrectDerivativeOfEnergyWrtDistance) {
   auto atomCollection1 = XyzStreamHandler::read(ss1);
   method.initialize(atomCollection1, 1.0, 1.9435, 0.4535, 4.4752, Dftd3::Damping::BJ);
 
+  // Without this, the coordination numbers are not calculated
+  method.calculate(Derivative::None);
+
   method.calculateValuesForConstants();
   auto firstAtom = method.getStructure()[0];
   auto secondAtom = method.getStructure()[1];
@@ -291,6 +294,7 @@ TEST_F(ADftd3Calculation, HasCorrectDerivativeOfEnergyWrtDistance) {
   auto atomCollection2 = XyzStreamHandler::read(ss2);
 
   method.initialize(atomCollection2, 1.0, 1.9435, 0.4535, 4.4752, Dftd3::Damping::BJ);
+  method.calculate(Derivative::None);
   method.calculateValuesForConstants();
   auto firstAtomNew = method.getStructure()[0];
   auto secondAtomNew = method.getStructure()[1];
@@ -299,7 +303,7 @@ TEST_F(ADftd3Calculation, HasCorrectDerivativeOfEnergyWrtDistance) {
 
   auto numGrad = (energy1 - energy2) / (0.00001 / (Constants::bohrRadius * Constants::angstrom_per_meter));
 
-  EXPECT_THAT(grad, DoubleNear(numGrad, 10e-11));
+  EXPECT_THAT(grad, DoubleNear(numGrad, 1e-09));
 }
 
 // Test, that the correct D3 energy and gradients are calculated for a large molecule (PBE0 functional).

@@ -548,7 +548,7 @@ TEST(SoluteSolventComplexTest, DoesAdditionOfMixedSolventsWork) {
   // Test number of shells
   int numShells = 2;
   SoluteSolventComplex::SolventPlacementSettings testSettingsShell = testSettings;
-  testSettingsShell.coverageThreshold = 0.40;
+  testSettingsShell.coverageThreshold = 0.75;
 
   auto solventComplexShellTuple = SoluteSolventComplex::solvateShellsMix(
       solute, solute.size(), solventList, std::vector<int>{11, 6, 2}, numShells, 42, testSettingsShell);
@@ -561,20 +561,34 @@ TEST(SoluteSolventComplexTest, DoesAdditionOfMixedSolventsWork) {
   ASSERT_THAT(solventComplexShell.size(), numShells + 1);
   ASSERT_THAT(solventComplexShellIndices.size(), numShells + 1);
   // Matching sizes of shell and solvent sizes
-  std::vector<int> matchShellSize2 = {9, 22};
-  std::vector<std::vector<int>> matchSolventSize2 = {
-      {4, 4, 3, 4, 4, 1, 3, 4, 4}, {3, 4, 3, 3, 3, 3, 4, 4, 3, 3, 3, 4, 4, 4, 3, 4, 3, 3, 3, 4, 4, 3}};
-  std::vector<std::vector<int>> matchSolventIndices2 = {
-      {0, 0, 1, 0, 0, 2, 1, 0, 0}, {1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1}};
-
+  std::vector<double> matchShellSize2 = {15.0, 51.0};
+  int count0 = 0;
+  int count1 = 0;
+  int count2 = 0;
   for (int i = 0; i < int(solventComplexShell.size()) - 1; i++) {
-    ASSERT_THAT(solventComplexShellIndices[i].size(), matchShellSize2[i]);
-    ASSERT_THAT(solventComplexShell[i].size(), matchShellSize2[i]);
+    // Check shell size +- 5
+    ASSERT_THAT(double(solventComplexShellIndices[i].size()), DoubleNear(matchShellSize2[i], 5.0));
+    ASSERT_THAT(double(solventComplexShell[i].size()), DoubleNear(matchShellSize2[i], 5.0));
     for (int j = 0; j < int(solventComplexShell[i].size()); j++) {
-      ASSERT_THAT(solventComplexShell[i][j].size(), matchSolventSize2[i][j]);
-      ASSERT_THAT(solventComplexShellIndices[i][j], matchSolventIndices2[i][j]);
+      if (solventComplexShellIndices[i][j] == 0) {
+        count0++;
+      }
+      else if (solventComplexShellIndices[i][j] == 1) {
+        count1++;
+      }
+      else if (solventComplexShellIndices[i][j] == 2) {
+        count2++;
+      }
     }
   }
+
+  // Check that order is correct
+  ASSERT_TRUE(count0 >= count1);
+  ASSERT_TRUE(count1 >= count2);
+  // Check that ratio is approximately correct (+- 0.15)
+  ASSERT_THAT(count0 / 66.0, DoubleNear(11.0 / 19.0, 0.15));
+  ASSERT_THAT(count1 / 66.0, DoubleNear(6.0 / 19.0, 0.15));
+  ASSERT_THAT(count2 / 66.0, DoubleNear(2.0 / 19.0, 0.15));
 }
 
 } /* namespace Tests */

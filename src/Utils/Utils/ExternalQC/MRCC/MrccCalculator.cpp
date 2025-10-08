@@ -81,6 +81,8 @@ const Results& MrccCalculator::calculate(std::string description) {
 }
 
 const Results& MrccCalculator::calculateImpl(std::string description) {
+  sanityChecks();
+
   ExternalProgram externalProgram;
   externalProgram.setWorkingDirectory(calculationDirectory_);
   externalProgram.createWorkingDirectory();
@@ -150,6 +152,13 @@ void MrccCalculator::applySettings() {
 
 void MrccCalculator::loadState(std::shared_ptr<Core::State> state) {
   auto mrccState = std::dynamic_pointer_cast<MrccState>(state);
+}
+
+void MrccCalculator::sanityChecks() {
+  int nElectrons = atoms_.nNeutralElectrons() - settings_->getInt(Utils::SettingsNames::molecularCharge);
+  if (nElectrons < 0) {
+    throw std::runtime_error("A negative number of electrons is not supported");
+  }
 }
 
 } // namespace ExternalQC

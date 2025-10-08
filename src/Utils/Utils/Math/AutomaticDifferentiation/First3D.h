@@ -29,6 +29,8 @@ class First3D : public FirstBase<Eigen::Vector3d, First3D> {
    * @brief Constructor with the value and derivatives given as doubles.
    */
   First3D(double v, double d1, double d2, double d3);
+
+  First3D(double v);
   /**
    * @brief Constructor that takes the value as a double, but the derivative as an Eigen::Vector3d.
    */
@@ -42,6 +44,9 @@ inline First3D::First3D() : First3D(0, Eigen::Vector3d::Zero()) {
 
 // Constructor that takes the value and derivatives as doubles.
 inline First3D::First3D(double v, double d1, double d2, double d3) : First3D(v, Eigen::Vector3d(d1, d2, d3)) {
+}
+
+inline First3D::First3D(double v) : First3D(v, Eigen::Vector3d::Zero()) {
 }
 
 // This constructor takes the derivatives as an Eigen::Vector3d object instead.

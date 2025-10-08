@@ -47,7 +47,7 @@ AtomCollection optimizeBase(Core::Calculator& calculator, Core::Log& logger,
   }
 
   if (observer) {
-    geometryOptimizer.addObserver([&](const int& cycle, const double& energy, const Eigen::VectorXd & /* parameters */) -> void {
+    geometryOptimizer.addObserver([&](const int& cycle, const double& energy, const Eigen::VectorXd& /* parameters */) -> void {
       auto structurePtr = calculator.getStructure();
       observer(cycle, energy, *structurePtr);
     });

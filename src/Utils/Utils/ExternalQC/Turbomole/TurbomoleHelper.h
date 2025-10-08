@@ -9,6 +9,7 @@
 #define TURBOMOLEHELPER_H
 
 #include <algorithm>
+#include <array>
 #include <string>
 #include <unordered_map>
 

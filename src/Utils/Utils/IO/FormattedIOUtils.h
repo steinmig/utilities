@@ -417,6 +417,65 @@ inline void prettyPrint(std::ostream& out, const SpinAdaptedElectronicTransition
     out << std::setw(20) << std::right << "Unrestricted electronic transitions." << std::endl;
     printComponent(energies, eigenVectors, transitionDipole);
   }
+  if (result.ciResult) {
+    const Eigen::VectorXd& eigenvalues = result.ciResult->eigenStates.eigenValues;
+    const Eigen::MatrixXd& eigenvectors = result.ciResult->eigenStates.eigenVectors;
+    const std::vector<double>& oscillatorStrengths = result.ciResult->oscillatorStrengths;
+    const Eigen::VectorXd& spinSquared = result.ciResult->spinSquared;
+    // int size= eigenvalues.size() ;
+    // out << size << std::endl;
+
+    out << std::setw(20) << std::right << "Electronic transitions." << std::endl;
+    out << "Only principal basis functions are printed out (CI Coef^2 > 0.1)." << std::endl;
+    // out << "Label is given as OccupiedOrbitalIndex -> VirtualOrbitalIndex (first orbital labelled 0)." << std::endl;
+    for (int transition = 0; transition < eigenvalues.size(); ++transition) {
+      double energy = eigenvalues(transition);
+      const Eigen::VectorXd& state = eigenvectors.col(transition);
+      // const double oscillatorStrength = oscillatorStrengths[transition];
+      // const double spin = spinSquared(transition);
+
+      out << std::left << "Electronic energy " << transition << ":    " << energy << " au    "
+          << Utils::Constants::ev_per_hartree * energy << " eV    " << std::right << std::endl;
+      out << std::left << "Vertical excitation energy " << transition << ":    " << energy - eigenvalues(0) << " au    "
+          << Utils::Constants::ev_per_hartree * (energy - eigenvalues(0)) << " eV    "
+          << Utils::Constants::invCentimeter_per_hartree * (energy - eigenvalues(0)) << " cm-1    "
+          << 1. / (Utils::Constants::invCentimeter_per_hartree * (energy - eigenvalues(0))) * 1.e7 << " nm"
+          << std::right << std::endl;
+
+      out << std::setw(30) << "Oscillator Strength" << std::setw(30) << "<S^2>" << std::endl;
+
+      out << std::setw(30) << oscillatorStrengths[transition] << std::setw(30) << spinSquared(transition) << std::endl;
+
+      // out << std::setw(30) << "<S^2>" << std::endl;
+
+      // out << std::setw(30) << spinSquared(transition) << std::endl;
+
+      out << std::setw(30) << "Basis function(s)" << std::setw(30) << "CI Coefficient" << std::setw(30)
+          << "CI Coefficient squared" << std::endl;
+
+      bool transitionsShown = false;
+      for (int basisFunction = 0; basisFunction < eigenvectors.rows(); ++basisFunction) {
+        if (std::pow(state(basisFunction), 2) > 0.01) {
+          out << std::setw(30) << basisFunction << std::setw(30) << state(basisFunction) << std::setw(30)
+              << state(basisFunction) * state(basisFunction) << std::endl;
+          transitionsShown = true;
+        }
+      }
+      if (!transitionsShown) {
+        double maxCoef = state.maxCoeff();
+        int index = 0;
+        for (int i = 0; i < state.size(); ++i) {
+          if (state(i) == maxCoef) {
+            index = i;
+            break;
+          }
+        }
+        out << std::setw(30) << index << std::setw(30) << maxCoef << std::setw(30) << maxCoef * maxCoef << std::endl;
+      }
+      out << std::endl;
+    }
+    out << std::endl;
+  }
 }
 
 template<class MatrixType>

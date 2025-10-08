@@ -12,6 +12,7 @@
    md
    optimizer
    periodicboundaries
+   sq
    settings
    results
 

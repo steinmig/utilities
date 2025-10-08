@@ -52,6 +52,8 @@ void FilesystemHelpers::copyFile(const std::string& from, const std::string& to)
   boostfs::path toFile{to};
 
   try {
+    // TODO: This is deprecated since Boost 1.74.0. Once we have newer modules exclusively,
+    // replace with boostfs::copy_options::overwrite_existing)
     boostfs::copy_file(fromFile, toFile, boostfs::copy_option::overwrite_if_exists);
   }
   catch (std::exception&) {

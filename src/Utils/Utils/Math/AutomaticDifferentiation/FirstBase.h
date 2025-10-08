@@ -66,6 +66,8 @@ class FirstBase {
   Crtp operator*(const FirstBase& rhs) const;
   Crtp operator/(const FirstBase& rhs) const;
 
+  bool operator==(const FirstBase& rhs) const;
+
   /**
    * @brief Returns the opposite of the derivative.
    * @return Crtp Type of the derived class
@@ -257,6 +259,11 @@ Crtp FirstBase<DerivativeT, Crtp>::operator/(const FirstBase<DerivativeT, Crtp>&
   auto a = thisImpl();
   a /= rhs;
   return a;
+}
+template<typename DerivativeT, typename Crtp>
+bool FirstBase<DerivativeT, Crtp>::operator==(const FirstBase<DerivativeT, Crtp>& rhs) const {
+  auto a = thisImpl();
+  return (a.value() == rhs.value() && a.derivatives() == rhs.derivatives());
 }
 
 template<typename DerivativeT, typename Crtp>

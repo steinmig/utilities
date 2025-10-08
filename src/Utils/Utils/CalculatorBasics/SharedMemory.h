@@ -8,9 +8,16 @@
 #define UTILS_SHAREDMEMORY_H_
 
 #include <Core/Log.h>
-#include <sys/ipc.h>   /* general SysV IPC structures          */
-#include <sys/sem.h>   /* shared memory functions and structs. */
-#include <sys/shm.h>   /* semaphore functions and structs.     */
+#ifndef _WIN32
+#  include <sys/ipc.h> /* general SysV IPC structures          */
+#  include <sys/sem.h> /* shared memory functions and structs. */
+#  include <sys/shm.h> /* semaphore functions and structs.     */
+#  define _HTYPE int
+#else
+#  include <SDKDDKVer.h>
+#  include <boost/asio.hpp>
+#  define _HTYPE HANDLE
+#endif
 #include <sys/types.h> /* various type definitions.            */
 #include <cstdio>
 #include <string>
@@ -62,6 +69,7 @@ class MemoryManager {
     // code has been minimally altered in comparison to the given reference
     // above
 
+#ifndef _WIN32
     /* create a semaphore set with ID 250, with one semaphore   */
     /* in it, with access only to the owner.                    */
     semSetId = semget(250, 1, IPC_CREAT | 0600);
@@ -89,6 +97,12 @@ class MemoryManager {
       throw std::runtime_error("Failed to attach the shared memory segment to "
                                "our process's address space.");
     }
+#else
+    semSetId = ::CreateMutex(NULL, FALSE, "scine_memorymanager_mutext");
+    shmId = ::CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(struct Memory),
+                                "scine_memorymanager_shmem");
+    shmAddr = (char*)::MapViewOfFile(shmId, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(struct Memory));
+#endif
     /* set the memory pointer to the shared memory segment. */
     memory = (struct Memory*)shmAddr;
   }
@@ -108,6 +122,8 @@ class MemoryManager {
    */
   inline void cleanUp() {
     _wasCleanedUp = true;
+
+#ifndef _WIN32
     /* de-allocate the shared memory segment. */
     if (shmctl(shmId, IPC_RMID, NULL) == -1) {
       perror("");
@@ -118,6 +134,12 @@ class MemoryManager {
       perror("");
       throw std::runtime_error("Failed to detach the shared memory segment");
     }
+#else
+    WaitForSingleObject(semSetId, INFINITE);
+    ::UnmapViewOfFile(shmAddr);
+    ::CloseHandle(shmId);
+    ::ReleaseMutex(semSetId);
+#endif
   };
 
   /**
@@ -214,7 +236,8 @@ class MemoryManager {
    * @brief locks the semaphore, for exclusive access to a resource
    * @param semSetId The semaphore set ID
    */
-  inline void semLock(int semSetId) const {
+  inline void semLock(_HTYPE semSetId) const {
+#ifndef _WIN32
     /* structure for semaphore operations.   */
     struct sembuf semOp;
     /* wait on the semaphore, unless it's value is non-negative. */
@@ -222,13 +245,17 @@ class MemoryManager {
     semOp.sem_op = -1;
     semOp.sem_flg = 0;
     semop(semSetId, &semOp, 1);
+#else
+    WaitForSingleObject(semSetId, INFINITE);
+#endif
   }
 
   /**
    * @brief unlocks the semaphore
    * @param semSetId The semaphore set ID
    */
-  inline void semUnlock(int semSetId) const {
+  inline void semUnlock(_HTYPE semSetId) const {
+#ifndef _WIN32
     /* structure for semaphore operations.   */
     struct sembuf semOp;
     /* signal the semaphore - increase its value by one. */
@@ -236,17 +263,24 @@ class MemoryManager {
     semOp.sem_op = 1;
     semOp.sem_flg = 0;
     semop(semSetId, &semOp, 1);
+#else
+    ::ReleaseMutex(semSetId);
+#endif
   }
-  /// ID of the semaphore set
-  int semSetId;
+
   /// semaphore value, for semctl()
+  _HTYPE semSetId;
+
+#ifndef _WIN32
   union semun {
     int val;
     struct semid_ds* buf;
     ushort* array;
   } semVal;
+#endif
   /// ID of the shared memory segment
-  int shmId;
+  _HTYPE shmId;
+
   /// address of shared memory segment
   char* shmAddr;
   /// the object in shared memory containing information

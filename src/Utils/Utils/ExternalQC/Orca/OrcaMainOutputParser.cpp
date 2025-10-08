@@ -340,7 +340,7 @@ double OrcaMainOutputParser::getGibbsFreeEnergy() const {
 }
 
 double OrcaMainOutputParser::getSymmetryNumber() const {
-  std::string regexString = R"(Point Group:\s+[a-zA-Z0-9]*\s*,\s+Symmetry Number:\s+)" + Regex::capturingIntegerNumber();
+  std::string regexString = R"(Point Group:\s+[a-zA-Z0-9()]*\s*,\s+Symmetry Number:\s+)" + Regex::capturingIntegerNumber();
   std::regex regex(regexString);
   std::smatch matches;
   bool b = std::regex_search(content_, matches, regex);

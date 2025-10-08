@@ -141,5 +141,5 @@ void init_settings(pybind11::module& m) {
    * might be preferable
    */
   settings.def("__deepcopy__",
-               [](const Settings& settings, const pybind11::dict & /* memo */) -> Settings { return settings; });
+               [](const Settings& settings, const pybind11::dict& /* memo */) -> Settings { return settings; });
 }

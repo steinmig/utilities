@@ -46,4 +46,5 @@ void init_constants(pybind11::module& m) {
   m.attr("KG_PER_ELECTRONRESTMASS") = Constants::kg_per_electronRestMass;
   m.attr("ELECTRONRESTMASS_PER_U") = Constants::electronRestMass_per_u;
   m.attr("U_PER_ELECTRONRESTMASS") = Constants::u_per_electronRestMass;
+  m.attr("SPEED_OF_LIGHT") = Constants::speedOfLight;
 }

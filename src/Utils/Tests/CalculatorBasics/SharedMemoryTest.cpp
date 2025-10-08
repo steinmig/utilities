@@ -8,7 +8,9 @@
 #include <Core/Log.h>
 #include <Utils/CalculatorBasics.h>
 #include <gmock/gmock.h>
-#include <unistd.h>
+#ifndef _WIN32
+#  include <unistd.h>
+#endif
 #include <chrono>
 #include <thread>
 
@@ -30,6 +32,7 @@ class ASharedMemoryTest : public Test {
 };
 
 TEST_F(ASharedMemoryTest, CanCommunicate) {
+#ifndef _WIN32
   // prepare long random string to ensure overflow safety
   static const char alphanum[] = "0123456789"
                                  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -106,6 +109,7 @@ TEST_F(ASharedMemoryTest, CanCommunicate) {
   ASSERT_FALSE(manager->wasCleanedUp());
   manager->cleanUp();
   ASSERT_TRUE(manager->wasCleanedUp());
+#endif
 }
 
 } // namespace Tests

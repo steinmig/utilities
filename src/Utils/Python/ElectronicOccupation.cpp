@@ -20,7 +20,6 @@ void init_electronic_occupation(pybind11::module& m) {
   electronic_occupation.def_property_readonly("n_beta", &ElectronicOccupation::numberBetaElectrons);
   electronic_occupation.def_property_readonly("filled_from_bottom", &ElectronicOccupation::isFilledUpFromTheBottom);
   electronic_occupation.def_property_readonly("has_unpaired_rhf_electron", &ElectronicOccupation::hasUnpairedRHFElectron);
-  electronic_occupation.def_property_readonly("has_unpaired_rhf_electron", &ElectronicOccupation::hasUnpairedRHFElectron);
   electronic_occupation.def_property_readonly("restricted", &ElectronicOccupation::isRestricted);
   electronic_occupation.def_property_readonly("unrestricted", &ElectronicOccupation::isUnrestricted);
   electronic_occupation.def("make_unrestricted", &ElectronicOccupation::makeUnrestricted,

@@ -74,6 +74,7 @@ void init_atom_collection(pybind11::module& m) {
   atom_collection.def(
       "__ge__", [&](const AtomCollection& lhs, const AtomCollection& rhs) -> bool { return lhs.size() >= rhs.size(); },
       pybind11::arg("other_system"), "AtomCollections are compared based on their size");
+  atom_collection.def("is_linear", &AtomCollection::isLinear, "Check if the structure is linear.");
 
   // Addition operators
   atom_collection.def(pybind11::self + pybind11::self);
