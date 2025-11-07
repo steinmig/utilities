@@ -81,6 +81,18 @@ double QuaternionFit::getRMSD() const {
   return std::sqrt((refMat_ - fittedMat_).rowwise().squaredNorm().sum() / refMat_.rows());
 }
 
+Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> QuaternionFit::getGradient() const {
+  auto rmsd = getRMSD();
+  if (rmsd < 1e-12) {
+    return Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>::Zero(refMat_.rows(), 3);
+  }
+  Eigen::MatrixX3d x = refMat_.rowwise() - refCenter_.transpose();
+  Eigen::MatrixX3d y = fitMat_.rowwise() - fitCenter_.transpose();
+  // rotation this way, because we have an active rotation (unlike cited paper)
+  // contrary to the paper, we calculate the gradient for the fitted matrix and not the reference matrix
+  return y - (x * rotMat_);
+}
+
 double QuaternionFit::getWeightedRMSD(const Eigen::VectorXd& weights) const {
   // collect sqared norms: ((refMat_-fittedMat_).rowwise().squaredNorm()
   // multiply with corresponding weight: (...).array()*weights.array()
