@@ -9,13 +9,14 @@
 #include "BSplineBasis.h"
 #include "FixedEndsPenalizedLeastSquares.h"
 #include "GeneratorUtils.h"
+#include <iostream>
 
 namespace Scine {
 namespace Utils {
 
 namespace BSplines {
 
-FixedEndsPenalizedLeastSquaresGenerator::FixedEndsPenalizedLeastSquaresGenerator(const Eigen::Ref<const Eigen::MatrixXd>& dataPoints,
+FixedEndsPenalizedLeastSquaresGenerator::FixedEndsPenalizedLeastSquaresGenerator(Eigen::MatrixXd dataPoints,
                                                                                  int numberOfControlPoints,
                                                                                  int splineDegree, bool uniformKnotVector,
                                                                                  double lambda, int kappa)
@@ -31,7 +32,6 @@ Eigen::VectorXd FixedEndsPenalizedLeastSquaresGenerator::generateKnotVector() {
   if (!uniformKnotVector_) {
     // generateParametersByChordLengthMethod();
     uBar_ = GeneratorUtils::generateParametersByCentripetalMethod(dataPoints_);
-
     // generateKnotVectorByKnotAveraging();
     return GeneratorUtils::generateKnotVectorByDeBoorsMethod(p_, n_, uBar_);
   }
