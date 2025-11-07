@@ -152,11 +152,42 @@ class PyCalculator : public Scine::Core::Calculator {
                                 getPositions, );
   }
   void loadState(std::shared_ptr<Scine::Core::State> state) override {
-    PYBIND11_OVERRIDE_PURE_NAME(void, Scine::Core::Calculator, "_load_state_impl", loadState, state);
+      // When a state from C++ is passed to a Python Calculator,
+      // we need to ensure pybind11 can correctly convert it to the Python object.
+      // The state coming from C++ might be a Pybind-wrapped Python object or a pure C++ object.
+      // If it's a Python object, we want to call the Python override with the actual Python type.
+      // We use pybind11::cast to attempt to cast it to the Python object.
+      // If it's a Pybind-wrapped object, this will succeed and retain the Python type.
+      pybind11::gil_scoped_acquire gil;
+      pybind11::function override = pybind11::get_override(this, "_load_state_impl");
+      if (override) {
+          // Attempt to cast the shared_ptr<Core::State> back to a Python object.
+          // pybind11 is smart enough to know if this shared_ptr points to a Python-bound object.
+          override(pybind11::cast(state)); // Pass the shared_ptr directly, pybind11 handles the casting
+      } else {
+          // This case should ideally not be hit if _load_state_impl is always overridden in Python
+          throw std::runtime_error("Missing overload of '_load_state_impl' in Python Calculator derivative.");
+      }
   }
   std::shared_ptr<Scine::Core::State> getState() const override {
-    PYBIND11_OVERRIDE_PURE_NAME(std::shared_ptr<Scine::Core::State>, Scine::Core::Calculator, "_get_state_impl", getState, );
+      pybind11::gil_scoped_acquire gil;
+      pybind11::function override = pybind11::get_override(this, "_get_state_impl");
+      if (override) {
+          auto state = override();
+          auto keep_python_state_alive = std::make_shared<pybind11::object>(state);
+          auto ptr = state.cast<Scine::Core::State*>();
+          // aliasing shared_ptr: points to `Scine::Core::State* ptr` but refcounts the Python object
+          return std::shared_ptr<Scine::Core::State>(keep_python_state_alive, ptr);
+      } else {
+          throw std::runtime_error("Missing overload of '_get_state_impl' in Python Calculator derivative.");
+      }
   }
+  //void loadState(std::shared_ptr<Scine::Core::State> state) override {
+  //  PYBIND11_OVERRIDE_PURE_NAME(void, Scine::Core::Calculator, "_load_state_impl", loadState, state);
+  //}
+  //std::shared_ptr<Scine::Core::State> getState() const override {
+  //  PYBIND11_OVERRIDE_PURE_NAME(std::shared_ptr<Scine::Core::State>, Scine::Core::Calculator, "_get_state_impl", getState, );
+  //}
   bool allowsPythonGILRelease() const override {
     PYBIND11_OVERRIDE_PURE_NAME(bool, Scine::Core::Calculator, "_allows_python_gil_release_impl", allowsPythonGILRelease, );
   }
@@ -201,8 +232,8 @@ bool hasCalculator(std::string method_family, std::string program) {
   return true;
 }
 
-std::shared_ptr<Scine::Core::Calculator> getCalculatorWithSettings(const std::string& method_family,
-                                                                   const pybind11::kwargs& kwargs) {
+std::shared_ptr<Scine::Core::Calculator> loadSystem(const std::string& path, std::string method_family,
+                                                    const pybind11::kwargs& kwargs) {
   // Convert to ValueCollection and read program
   Scine::Utils::UniversalSettings::ValueCollection collection;
   update(collection, pybind11::dict(kwargs), true);
@@ -214,24 +245,9 @@ std::shared_ptr<Scine::Core::Calculator> getCalculatorWithSettings(const std::st
   if (!calc->settings().valid()) {
     calc->settings().throwIncorrectSettings();
   }
-
-  return calc;
-}
-
-std::shared_ptr<Scine::Core::Calculator> loadSystem(const std::string& path, std::string method_family,
-                                                    const pybind11::kwargs& kwargs) {
-  auto calc = getCalculatorWithSettings(method_family, kwargs);
   // Set initial structure
   auto readResults = Scine::Utils::ChemicalFileHandler::read(path);
   calc->setStructure(readResults.first);
-  return calc;
-}
-
-std::shared_ptr<Scine::Core::Calculator> loadSystem(const Scine::Utils::AtomCollection& structure,
-                                                    std::string method_family, const pybind11::kwargs& kwargs) {
-  auto calc = getCalculatorWithSettings(method_family, kwargs);
-  // Set initial structure
-  calc->setStructure(structure);
   return calc;
 }
 
@@ -287,6 +303,8 @@ std::shared_ptr<Scine::Core::EmbeddingCalculator> toEmbedded(Scine::Core::Calcul
 
 void init_calculator(pybind11::module& m) {
   pybind11::class_<Scine::Core::State, std::shared_ptr<Scine::Core::State>> state(m, "State");
+  //state.def(pybind11::init_alias<>(), "Default Constructor");
+  state.def(pybind11::init<>());
   pybind11::class_<Scine::Core::StateHandableObject, PyStateHandableObject, std::shared_ptr<Scine::Core::StateHandableObject>> stateHandableObject(
       m, "StateHandableObject");
   pybind11::class_<Scine::Core::ObjectWithStructure, PyObjectWithStructure, std::shared_ptr<Scine::Core::ObjectWithStructure>> objectWithStructure(
@@ -353,17 +371,10 @@ void init_calculator(pybind11::module& m) {
         "Checks if a calculator with the given method and the given program is available.");
   m.def("get_calculator", &Scine::Utils::CalculationRoutines::getCalculator, pybind11::arg("method_family"),
         pybind11::arg("program") = "Any", "Generates a calculator with the given method and from the given program.");
-  m.def("load_system", pybind11::overload_cast<const std::string&, std::string, const pybind11::kwargs&>(&loadSystem),
-        pybind11::arg("path"), pybind11::arg("method_family"),
+  m.def("load_system", &loadSystem, pybind11::arg("path"), pybind11::arg("method_family"),
         "Loads a single system (xyz-file) into a Calculator with the given method and optional settings. (Deprecated)");
-  m.def("load_system_into_calculator",
-        pybind11::overload_cast<const std::string&, std::string, const pybind11::kwargs&>(&loadSystem),
-        pybind11::arg("path"), pybind11::arg("method_family"),
+  m.def("load_system_into_calculator", &loadSystem, pybind11::arg("path"), pybind11::arg("method_family"),
         "Loads a single system (xyz-file) into a Calculator with the given method and optional settings.");
-  m.def("load_system_into_calculator",
-        pybind11::overload_cast<const Scine::Utils::AtomCollection&, std::string, const pybind11::kwargs&>(&loadSystem),
-        pybind11::arg("path"), pybind11::arg("method_family"),
-        "Loads a single system (AtomCollection) into a Calculator with the given method and optional settings.");
   m.def("get_available_settings", &getAvailableSettings, pybind11::arg("method_family"), pybind11::arg("program") = "Any",
         "Gives the available default settings of a Calculator with the given method and from the given program");
   m.def("get_possible_properties", &getPossiblePropertiesByStrings, pybind11::arg("method_family"),
