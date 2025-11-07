@@ -86,6 +86,11 @@ class QuaternionFit {
    */
   double getRMSD() const;
   /**
+   * @brief Calculates the gradient of the RMSD with respected to the fitted positions
+   * @return GradientCollection The gradient in the dimension of the given fitMat
+   */
+  Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> getGradient() const;
+  /**
    * @brief Getter for the RMSD due to differences in rotation only.
    * @return double The RMSD.
    */

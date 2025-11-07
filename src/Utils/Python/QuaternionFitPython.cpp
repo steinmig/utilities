@@ -44,6 +44,9 @@ void init_quaternion_fit(pybind11::module& m) {
 
   quaternion_fit.def("get_rmsd", &QuaternionFit::getRMSD, "Getter for the RMSD not using any weights that might be stored.");
 
+  quaternion_fit.def("get_gradient", &QuaternionFit::getGradient,
+                     "Calculate the gradient of the RMSD with respect to the fit_matrix");
+
   quaternion_fit.def("get_rot_rmsd", &QuaternionFit::getRotRMSD, "Getter for the RMSD due to differences in rotation only.");
 
   quaternion_fit.def("get_weighted_rmsd",

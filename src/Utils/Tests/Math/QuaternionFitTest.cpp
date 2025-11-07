@@ -150,6 +150,44 @@ TEST_F(QuaternionFitTest, IsCorrectForRotatedPositions) {
   ASSERT_TRUE(rotationMatrix.isApprox(rotation.toRotationMatrix()));
 }
 
+TEST_F(QuaternionFitTest, Gradient) {
+  PositionCollection positions1(2, 3);
+  PositionCollection positions2(2, 3);
+  PositionCollection positions3(2, 3);
+  positions1 << 0, 0, 0, 1, 0, 0;
+  positions2 << 1, 0, 0, 2.1, 0, 0;
+  QuaternionFit fit(positions1, positions1);
+  auto grad = fit.getGradient();
+  ASSERT_NEAR(fit.getRMSD(), 0.0, 1E-6);
+  ASSERT_TRUE(fit.getGradient().isApprox(Eigen::MatrixX3d::Zero(2, 3)));
+  fit = QuaternionFit(positions1, positions2);
+  grad = fit.getGradient();
+  ASSERT_NEAR(grad(0, 0), -0.05, 1E-6);
+  ASSERT_NEAR(grad(1, 0), 0.05, 1E-6);
+  ASSERT_NEAR(grad(0, 1), 0.0, 1E-6);
+  ASSERT_NEAR(grad(0, 2), 0.0, 1E-6);
+  ASSERT_NEAR(grad(1, 1), 0.0, 1E-6);
+  ASSERT_NEAR(grad(1, 2), 0.0, 1E-6);
+  positions3 << 0, 0, 0, 0, 1.1, 0;
+  fit = QuaternionFit(positions1, positions3);
+  grad = fit.getGradient();
+  positions3 -= grad;
+  fit = QuaternionFit(positions1, positions3);
+  ASSERT_NEAR(fit.getRMSD(), 0.0, 1E-6);
+  std::stringstream stream("3\n\n"
+                           "O    -0.00392892   0.38587356  0.00000000\n"
+                           "H    -0.76036657  -0.19836384  0.00000000\n"
+                           "H     0.75900101  -0.18964299  0.00000000");
+  auto atoms1 = XyzStreamHandler::read(stream);
+  PositionCollection positions4(3, 3);
+  positions4 << 0, 0, 0, 1, 0, 0, 0, 1, 0;
+  fit = QuaternionFit(atoms1.getPositions(), positions4);
+  grad = fit.getGradient();
+  positions4 -= grad;
+  fit = QuaternionFit(atoms1.getPositions(), positions4);
+  ASSERT_NEAR(fit.getRMSD(), 0.0, 1E-6);
+}
+
 } // namespace Tests
 } /* namespace Utils */
 } /* namespace Scine */
