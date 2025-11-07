@@ -6,6 +6,11 @@
  */
 #include <Utils/Geometry/AtomCollection.h>
 #include <Utils/Math/BSplines/ReactionProfileInterpolation.h>
+#include <Utils/Math/BSplines/InterpolationGenerator.h>
+#include <Utils/Math/BSplines/FixedEndsPenalizedLeastSquaresGenerator.h>
+#include <Utils/Math/BSplines/FixedEndsPenalizedLeastSquares.h>
+#include <Utils/Math/BSplines/BSpline.h>
+#include <Utils/Math/BSplines/MolecularSpline.h>
 #include <Utils/Pybind.h>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
@@ -19,6 +24,29 @@ void init_bspline_functionalities(pybind11::module& m) {
     A collection of functions to generate and work with B-Splines of molecular
     trajectories.
   )delim";
+
+
+  pybind11::class_<Utils::BSplines::BSpline> old_bspline{bsplines, "BSpline"};
+  old_bspline.def(pybind11::init<Eigen::VectorXd, Eigen::MatrixXd, int>());
+  old_bspline.def("evaluate", &Utils::BSplines::BSpline::evaluate, pybind11::arg("u"), pybind11::arg("derivative_order") = 0);
+  old_bspline.def("get_derivative_bspline", &Utils::BSplines::BSpline::getDerivativeBSpline, pybind11::arg("derivative_order"));
+
+  pybind11::class_<Utils::BSplines::MolecularSpline> molecular_spline{bsplines, "MolecularSpline"};
+  molecular_spline.def(pybind11::init<Utils::ElementTypeCollection, Utils::BSplines::BSpline>());
+  molecular_spline.def("get_positions", &Utils::BSplines::MolecularSpline::getPositions, pybind11::arg("u"));
+  molecular_spline.def("at", &Utils::BSplines::MolecularSpline::at, pybind11::arg("u"));
+  molecular_spline.def("get_bspline", pybind11::overload_cast<>(&Utils::BSplines::MolecularSpline::getBSpline));
+  molecular_spline.def("get_elements", &Utils::BSplines::MolecularSpline::getElements);
+
+  pybind11::class_<Utils::BSplines::FixedEndsPenalizedLeastSquaresGenerator> generator{bsplines, "FixedEndsPenalizedLeastSquaresGenerator"};
+  generator.def(pybind11::init<Eigen::MatrixXd, int, int, bool, double, int>());
+  generator.def("generate_b_spline", &Utils::BSplines::FixedEndsPenalizedLeastSquaresGenerator::generateBSpline,
+                R"delim(
+        Generate a B-Spline with fixed ends.
+
+        :return: A B-Spline object.
+      )delim");
+
 
   pybind11::class_<Utils::BSplines::TrajectorySpline> bspline{bsplines, "TrajectorySpline", R"delim(
       A class representing a B-Spline fit.
@@ -102,4 +130,6 @@ void init_bspline_functionalities(pybind11::module& m) {
       to the previous one. This fit is done in mass-weighted coordinates using
       quaternions.
     )delim");
+
+
 }

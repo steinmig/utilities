@@ -26,7 +26,7 @@ namespace BSplines {
  */
 class FixedEndsPenalizedLeastSquaresGenerator : public Generator {
  public:
-  FixedEndsPenalizedLeastSquaresGenerator(const Eigen::Ref<const Eigen::MatrixXd>& dataPoints,
+  FixedEndsPenalizedLeastSquaresGenerator(Eigen::MatrixXd dataPoints,
                                           int numberOfControlPoints, int splineDegree = 3,
                                           bool uniformKnotVector = false, double lambda = 0, int kappa = 2);
 
