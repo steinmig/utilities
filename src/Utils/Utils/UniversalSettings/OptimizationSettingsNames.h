@@ -145,6 +145,7 @@ struct Nt2 {
   static constexpr const char* extractLastBeforeTarget = "last_maximum_before_first_target";
   static constexpr const char* extractHighest = "highest_maximum";
   static constexpr const char* extractFirst = "first_maximum";
+  static constexpr const char* electronicBonds = "electronic_bonds";
 };
 
 struct Irc {

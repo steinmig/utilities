@@ -129,6 +129,10 @@ class NtOptimizer2 : public Optimizer {
    */
   std::string extractionCriterion = possibleExtractionOptions.front();
   /**
+   * @brief Whether to rely on Mayer bond orders (true) or on distance-based bond orders (false).
+   */
+  bool electronicBonds = true;
+  /**
    * @brief The special convergence settings for this optimizer.
    */
   struct NtConvergenceStub {
@@ -238,6 +242,10 @@ class NtOptimizer2 : public Optimizer {
    * @param atoms The current atoms to resize the constraints mapping list.
    */
   void setConstraintsMap(const AtomCollection& atoms);
+  /**
+   * @brief Construct a Bond order matrix based on the current structure in the calculator.
+   */
+  BondOrderCollection getBondOrders() const;
   // @brief values of macro cycles
   std::vector<double> _values;
   // @brief trajectory of macro cycles

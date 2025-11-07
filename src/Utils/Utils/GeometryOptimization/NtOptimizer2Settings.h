@@ -103,6 +103,11 @@ class NtOptimizer2Settings : public Settings {
     nt_fixed_atoms.setItemMinimum(0);
     this->_fields.push_back(SettingsNames::Optimizations::Nt2::fixedAtoms, std::move(nt_fixed_atoms));
 
+    UniversalSettings::BoolDescriptor nt_electronic_bonds(
+        "Whether to rely on Mayer bond orders (True) or on distance-based bond orders (False).");
+    nt_electronic_bonds.setDefaultValue(true);
+    this->_fields.push_back(SettingsNames::Optimizations::Nt2::electronicBonds, std::move(nt_electronic_bonds));
+
     this->resetToDefaults();
   }
 };

@@ -6,7 +6,9 @@
  */
 
 #include "Utils/GeometryOptimization/NtOptimizer2.h"
+#include "Utils/Bonds/BondDetector.h"
 #include "Utils/CalculatorBasics/CalculationRoutines.h"
+#include "Utils/DataStructures/PeriodicBoundaries.h"
 #include "Utils/Geometry/AtomCollection.h"
 #include "Utils/Geometry/ElementInfo.h"
 #include "Utils/GeometryOptimization/NtOptimizer2Settings.h"
@@ -25,7 +27,11 @@ int NtOptimizer2::optimize(AtomCollection& atoms, Core::Log& log) {
   this->setConstraintsMap(atoms);
   // Configure Calculator
   _calculator.setStructure(atoms);
-  _calculator.setRequiredProperties(Utils::Property::Energy | Utils::Property::Gradients | Utils::Property::BondOrderMatrix);
+  PropertyList requiredProperties = Utils::Property::Energy | Utils::Property::Gradients;
+  if (electronicBonds) {
+    requiredProperties.addProperty(Utils::Property::BondOrderMatrix);
+  }
+  _calculator.setRequiredProperties(requiredProperties);
   Utils::PositionCollection coordinates = atoms.getPositions();
   const unsigned int nAtoms = atoms.size();
   int cycle = 0;
@@ -46,12 +52,12 @@ int NtOptimizer2::optimize(AtomCollection& atoms, Core::Log& log) {
       auto const microIterUpdate = [&](const Eigen::VectorXd& parameters, double& value, Eigen::VectorXd& gradients) {
         coordinates = Eigen::Map<const Utils::PositionCollection>(parameters.data(), nAtoms, 3);
         _calculator.modifyPositions(coordinates);
-        _calculator.setRequiredProperties(Utils::Property::Energy | Utils::Property::Gradients | Utils::Property::BondOrderMatrix);
+        _calculator.setRequiredProperties(requiredProperties);
         atoms.setPositions(coordinates);
         Results results = CalculationRoutines::calculateWithCatch(_calculator, log, "Calculation in NT optimization failed.");
         value = results.get<Property::Energy>();
         // Apply Cartesian constraints
-        auto bos = results.get<Property::BondOrderMatrix>();
+        auto bos = getBondOrders();
         auto gradientMatrix = results.get<Property::Gradients>();
         this->updateGradients(atoms, value, gradientMatrix, bos, cycle);
         gradients = Eigen::Map<const Eigen::VectorXd>(gradientMatrix.data(), nAtoms * 3);
@@ -97,7 +103,7 @@ int NtOptimizer2::optimize(AtomCollection& atoms, Core::Log& log) {
     }
     double value = results.get<Property::Energy>();
     auto gradients = results.get<Property::Gradients>();
-    auto bos = results.get<Property::BondOrderMatrix>();
+    auto bos = getBondOrders();
     this->triggerObservers(cycle, value, Eigen::Map<const Eigen::VectorXd>(coordinates.data(), nAtoms * 3));
     // Evaluate additional force
     this->updateGradients(atoms, value, gradients, bos, cycle, true);
@@ -565,6 +571,7 @@ void NtOptimizer2::setSettings(const Settings& settings) {
   this->filterPasses = settings.getInt(SettingsNames::Optimizations::Nt2::filterPasses);
   this->fixedAtoms = settings.getIntList(SettingsNames::Optimizations::Nt2::fixedAtoms);
   this->extractionCriterion = settings.getString(SettingsNames::Optimizations::Nt2::extractionCriterion);
+  this->electronicBonds = settings.getBool(SettingsNames::Optimizations::Nt2::electronicBonds);
 
   // Check whether constraints and coordinate transformations are both switched on:
   if (!this->fixedAtoms.empty() && this->coordinateSystem != CoordinateSystem::Cartesian) {
@@ -590,6 +597,10 @@ void NtOptimizer2::setReactiveAtomsList() {
 }
 
 void NtOptimizer2::setConstraintsMap(const AtomCollection& atoms) {
+    std::cout <<"constrainmap size " << std::endl;
+    std::cout <<  _constraintsMap.size() << std::endl;
+  std::cout <<"atoms size " << std::endl;
+  std::cout << atoms.size() << std::endl;
   this->_constraintsMap.resize(atoms.size());
   for (auto const& i : _reactiveAtomsList) {
     std::vector<int> matches = {};
@@ -631,6 +642,22 @@ const std::vector<std::vector<int>>& NtOptimizer2::getConstraintsMap() {
 
 const std::vector<int>& NtOptimizer2::getReactiveAtomsList() {
   return _reactiveAtomsList;
+}
+
+BondOrderCollection NtOptimizer2::getBondOrders() const {
+  if (electronicBonds) {
+    return _calculator.results().get<Property::BondOrderMatrix>();
+  }
+  /*
+  if (_calculator.settings().valueExists(SettingsNames::periodicBoundaries)) {
+    auto pbc_string = _calculator.settings().getString(SettingsNames::periodicBoundaries);
+    if (!pbc_string.empty() && !Utils::caseInsensitiveEqual(pbc_string, std::string("none"))) {
+      PeriodicBoundaries pbc(pbc_string);
+      return BondDetector::detectBonds(*_calculator.getStructure(), pbc);
+    }
+  }
+  */
+  return BondDetector::detectBonds(*_calculator.getStructure());
 }
 
 namespace NtUtils {
