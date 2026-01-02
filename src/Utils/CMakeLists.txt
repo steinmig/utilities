@@ -150,12 +150,12 @@ if(SCINE_BUILD_PYTHON_BINDINGS)
   set(PYBIND11_PYTHON_VERSION ${PYTHONVERSION})
 
   # Python module
-  pybind11_add_module(scine_utilities ${UTILS_PYTHON_CPPS})
-  set_target_properties(scine_utilities PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
+  pybind11_add_module(steinmig_scine_utilities ${UTILS_PYTHON_CPPS})
+  set_target_properties(steinmig_scine_utilities PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/steinmig_scine_utilities
   )
-  target_link_libraries(scine_utilities PRIVATE Scine::UtilsOS Scine::Core yaml-cpp)
-  target_include_directories(scine_utilities PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Python> $<BUILD_INTERFACE:${YAML_CPP_INCLUDE_DIR}>)
+  target_link_libraries(steinmig_scine_utilities PRIVATE Scine::UtilsOS Scine::Core yaml-cpp)
+  target_include_directories(steinmig_scine_utilities PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Python> $<BUILD_INTERFACE:${YAML_CPP_INCLUDE_DIR}>)
 
   install(CODE
     "execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --prefix=${CMAKE_INSTALL_PREFIX} --upgrade ${CMAKE_CURRENT_BINARY_DIR}
@@ -180,21 +180,21 @@ if(SCINE_BUILD_PYTHON_BINDINGS)
   # Copy the setup file and README.rst into the binary dir so you can install
   # using pip or make a distribution with the compiled binary
   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Python/pkginit.py
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/steinmig_scine_utilities
   )
   file(RENAME
-    ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities/pkginit.py
-    ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities/__init__.py
+    ${CMAKE_CURRENT_BINARY_DIR}/steinmig_scine_utilities/pkginit.py
+    ${CMAKE_CURRENT_BINARY_DIR}/steinmig_scine_utilities/__init__.py
   )
   file(
     COPY ${PROJECT_SOURCE_DIR}/README.rst
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
   )
   add_custom_command(TARGET UtilsOSModule POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:UtilsOSModule> ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:UtilsOSModule> ${CMAKE_CURRENT_BINARY_DIR}/steinmig_scine_utilities
     COMMENT "Copying UtilsOS module into python package directory"
   )
-  add_dependencies(scine_utilities UtilsOSModule)
+  add_dependencies(steinmig_scine_utilities UtilsOSModule)
 
   # Figure out which targets need to be copied along
   set(_py_targets_to_copy Scine::Core)  # Core is always shared
@@ -214,7 +214,7 @@ if(SCINE_BUILD_PYTHON_BINDINGS)
   endforeach()
 
   add_custom_command(TARGET UtilsOS POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${_py_target_gen_exprs} ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
+    COMMAND ${CMAKE_COMMAND} -E copy ${_py_target_gen_exprs} ${CMAKE_CURRENT_BINARY_DIR}/steinmig_scine_utilities
     COMMENT "Copying dependent shared libraries into python package directory"
   )
   message(STATUS "Targets to copy for python bindings: ${_py_targets_to_copy}")
@@ -224,8 +224,8 @@ if(SCINE_BUILD_PYTHON_BINDINGS)
   include(FindPythonModule)
   find_python_module(pybind11_stubgen)
   if(PY_PYBIND11_STUBGEN)
-    add_custom_command(TARGET scine_utilities POST_BUILD
-      COMMAND ${PYTHON_EXECUTABLE} -m pybind11_stubgen -o . --root-module-suffix \"\" --no-setup-py --bare-numpy-ndarray scine_utilities
+    add_custom_command(TARGET steinmig_scine_utilities POST_BUILD
+      COMMAND ${PYTHON_EXECUTABLE} -m pybind11_stubgen -o . --root-module-suffix \"\" --no-setup-py --bare-numpy-ndarray steinmig_scine_utilities
       COMMENT "Generating python package typechecking stubs with pybind11-stubgen"
     )
   else()
@@ -247,15 +247,15 @@ if(SCINE_BUILD_PYTHON_BINDINGS)
   # Python documentation
   include(SphinxDocumentation)
   scine_sphinx_documentation(
-    TARGET scine_utilities
+    TARGET steinmig_scine_utilities
     CONFIGURATION ${CMAKE_CURRENT_SOURCE_DIR}/Python/Sphinx/conf.py.in
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Python/Sphinx
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/doc-py
     DOCTEST
   )
   # The UtilsOSModule is technically also a dependency of the documentation
-  if(TARGET scine_utilitiesDocumentation)
-    add_dependencies(scine_utilitiesDocumentation UtilsOSModule)
+  if(TARGET steinmig_scine_utilitiesDocumentation)
+    add_dependencies(steinmig_scine_utilitiesDocumentation UtilsOSModule)
   endif()
 endif()
 

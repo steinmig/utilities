@@ -68,7 +68,7 @@ void init_value_collection(pybind11::module& m);
 void init_sq_specifier(pybind11::module& m);
 void init_regression_functionalities(pybind11::module& m);
 
-PYBIND11_MODULE(scine_utilities, m) {
+PYBIND11_MODULE(steinmig_scine_utilities, m) {
   m.doc() = "Pybind11 Bindings for SCINE-Utilities";
 
   // Ordering is important!

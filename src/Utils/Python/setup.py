@@ -35,7 +35,7 @@ def find_stubs(package_name: str) -> List[str]:
 
 def collect_data(pkg_name: str) -> Dict[str, List[str]]:
     """ Generates the package_data dict with stubs (if present) """
-    package_data = {pkg_name: ["scine_utilities.*", "*.txt", "utilsos.module.*"@utils_PY_DEPS@]}
+    package_data = {pkg_name: ["steinmig_scine_utilities.*", "*.txt", "utilsos.module.*"@utils_PY_DEPS@]}
 
     # Handle possibility of typing stubs present
     stubs = find_stubs(pkg_name)
@@ -51,15 +51,15 @@ def collect_data(pkg_name: str) -> Dict[str, List[str]]:
 
 
 setuptools.setup(
-    name="scine_utilities",
+    name="steinmig_scine_utilities",
     version="@PROJECT_VERSION@",
     author="ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group",
     author_email="scine@phys.chem.ethz.ch",
     description="Utilities used in all SCINE modules",
     long_description=long_description,
     url="https://www.scine.ethz.ch",
-    packages=["scine_utilities"],
-    package_data=collect_data("scine_utilities"),
+    packages=["steinmig_scine_utilities"],
+    package_data=collect_data("steinmig_scine_utilities"),
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: C++",
