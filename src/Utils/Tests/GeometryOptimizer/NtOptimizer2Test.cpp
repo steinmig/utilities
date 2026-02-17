@@ -195,6 +195,68 @@ TEST(NtOptimizer2Tests, SN2HighestMaximum) {
   runSN2Test(nt, logger);
 }
 
+TEST(NtOptimizer2Tests, SN2ElectronicBondsFalse) {
+  Core::Log logger = Core::Log::silent();
+  TestCalculator testCalc;
+  NtOptimizer2 nt(testCalc);
+  nt.electronicBonds = false;
+  nt.coordinateSystem = CoordinateSystem::Cartesian;
+  nt.associationList = {0, 1};
+  nt.dissociationList = {1, 5};
+  nt.useMicroCycles = true;
+  nt.totalForceNorm = 0.1;
+  nt.numberOfMicroCycles = 10;
+  auto elements = ElementTypeCollection{ElementType::Cl, ElementType::C, ElementType::H,
+                                        ElementType::H,  ElementType::H, ElementType::Br};
+  PositionCollection startPositions = PositionCollection::Zero(6, 3);
+  // clang-format off
+  startPositions <<  3.7376961460e+00,  2.1020866350e-04,  4.5337439168e-02,
+                    -3.8767703481e+00, -2.4803422157e-05, -1.2049608882e-01,
+                    -2.3620148614e+00,  1.3238308540e+00,  1.0376490681e-01,
+                    -2.3809041075e+00, -8.2773666259e-01,  9.6331578315e-01,
+                    -2.3309449521e+00, -4.9652606314e-01, -1.3293307598e+00,
+                    -7.4798903722e+00,  2.6536371103e-04, -1.9897114399e-01;
+  // clang-format on
+  AtomCollection atoms(elements, startPositions);
+  int nIter = nt.optimize(atoms, logger);
+  ASSERT_GT(nIter, 0);
+  // Optimization completed; TS guess extracted (no throw). Verify structure was updated.
+  PositionCollection positions = atoms.getPositions();
+  EXPECT_GT((positions.row(0) - positions.row(1)).norm(), 0.1);
+}
+
+TEST(NtOptimizer2Tests, ExtraMacrocyclesAfterBondCriteria) {
+  Core::Log logger = Core::Log::silent();
+  TestCalculator testCalc;
+  NtOptimizer2 nt(testCalc);
+  nt.electronicBonds = false;
+  nt.coordinateSystem = CoordinateSystem::Cartesian;
+  nt.associationList = {0, 1};
+  nt.dissociationList = {1, 5};
+  nt.useMicroCycles = true;
+  nt.totalForceNorm = 0.1;
+  nt.numberOfMicroCycles = 10;
+  auto elements = ElementTypeCollection{ElementType::Cl, ElementType::C, ElementType::H,
+                                        ElementType::H,  ElementType::H, ElementType::Br};
+  PositionCollection startPositions = PositionCollection::Zero(6, 3);
+  // clang-format off
+  startPositions <<  3.7376961460e+00,  2.1020866350e-04,  4.5337439168e-02,
+                    -3.8767703481e+00, -2.4803422157e-05, -1.2049608882e-01,
+                    -2.3620148614e+00,  1.3238308540e+00,  1.0376490681e-01,
+                    -2.3809041075e+00, -8.2773666259e-01,  9.6331578315e-01,
+                    -2.3309449521e+00, -4.9652606314e-01, -1.3293307598e+00,
+                    -7.4798903722e+00,  2.6536371103e-04, -1.9897114399e-01;
+  // clang-format on
+  AtomCollection atoms0(elements, startPositions);
+  nt.extraMacrocyclesAfterBondCriteria = 0;
+  int nIterZeroExtra = nt.optimize(atoms0, logger);
+  AtomCollection atomsExtra(elements, startPositions);
+  nt.extraMacrocyclesAfterBondCriteria = 5;
+  int nIterFiveExtra = nt.optimize(atomsExtra, logger);
+  EXPECT_GE(nIterFiveExtra, nIterZeroExtra + 5)
+      << "With electronicBonds=false, 5 extra macrocycles after bond criteria should add at least 5 more cycles";
+}
+
 TEST(NtOptimizer2Tests, SingleStepFailure) {
   Core::Log logger = Core::Log::silent();
   NtOpt2MockCalculator mockCalculator;

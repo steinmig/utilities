@@ -143,6 +143,8 @@ void init_opt_settings_names(pybind11::module& m) {
   nt2.def_readonly_static("highest_maximum", &SettingsNames::Optimizations::Nt2::extractHighest);
   nt2.def_readonly_static("first_maximum", &SettingsNames::Optimizations::Nt2::extractFirst);
   nt2.def_readonly_static("electronic_bonds", &SettingsNames::Optimizations::Nt2::electronicBonds);
+  nt2.def_readonly_static("extra_macrocycles_after_bond_criteria",
+                          &SettingsNames::Optimizations::Nt2::extraMacrocyclesAfterBondCriteria);
 
   pybind11::class_<SettingsNames::Optimizations::Irc> irc(settingsNames, "Irc");
   irc.def_readonly_static("initial_step_size", &SettingsNames::Optimizations::Irc::initialStepSize);

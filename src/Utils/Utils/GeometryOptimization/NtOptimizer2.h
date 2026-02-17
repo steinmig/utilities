@@ -133,6 +133,11 @@ class NtOptimizer2 : public Optimizer {
    */
   bool electronicBonds = true;
   /**
+   * @brief When electronic bonds are deactivated, number of extra macrocycles to run after bond
+   *        criteria are first met before stopping (default 10). Ignored if electronicBonds is true.
+   */
+  int extraMacrocyclesAfterBondCriteria = 10;
+  /**
    * @brief The special convergence settings for this optimizer.
    */
   struct NtConvergenceStub {
