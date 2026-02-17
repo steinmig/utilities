@@ -36,6 +36,7 @@ int NtOptimizer2::optimize(AtomCollection& atoms, Core::Log& log) {
   const unsigned int nAtoms = atoms.size();
   int cycle = 0;
   _values.clear();
+  int extraMacrocyclesRemaining = -1; // -1: not in post-bond-criteria phase when using distance-based bonds
   for (unsigned int loop = 0; loop < this->check.maxIter; loop++) {
     cycle++;
     // Micro cycles performed in true Cartesians due to constraints
@@ -113,10 +114,26 @@ int NtOptimizer2::optimize(AtomCollection& atoms, Core::Log& log) {
     _trajectory.push_back(coordinates);
     // Check convergence
     if (this->convergedOptimization(atoms, bos)) {
-      coordinates = this->extractTsGuess();
-      atoms.setPositions(coordinates);
-      _calculator.modifyPositions(coordinates);
-      return cycle;
+      if (electronicBonds) {
+        coordinates = this->extractTsGuess();
+        atoms.setPositions(coordinates);
+        _calculator.modifyPositions(coordinates);
+        return cycle;
+      }
+      // With distance-based bonds: run extra macrocycles after bond criteria are first met
+      if (extraMacrocyclesRemaining == -1) {
+        extraMacrocyclesRemaining = extraMacrocyclesAfterBondCriteria;
+      }
+      if (extraMacrocyclesRemaining == 0) {
+        coordinates = this->extractTsGuess();
+        atoms.setPositions(coordinates);
+        _calculator.modifyPositions(coordinates);
+        return cycle;
+      }
+      extraMacrocyclesRemaining--;
+    }
+    else {
+      extraMacrocyclesRemaining = -1; // reset if bond criteria no longer met
     }
     // Update positions (SD)
     this->updateCoordinates(coordinates, atoms, gradients);
@@ -572,6 +589,7 @@ void NtOptimizer2::setSettings(const Settings& settings) {
   this->fixedAtoms = settings.getIntList(SettingsNames::Optimizations::Nt2::fixedAtoms);
   this->extractionCriterion = settings.getString(SettingsNames::Optimizations::Nt2::extractionCriterion);
   this->electronicBonds = settings.getBool(SettingsNames::Optimizations::Nt2::electronicBonds);
+  this->extraMacrocyclesAfterBondCriteria = settings.getInt(SettingsNames::Optimizations::Nt2::extraMacrocyclesAfterBondCriteria);
 
   // Check whether constraints and coordinate transformations are both switched on:
   if (!this->fixedAtoms.empty() && this->coordinateSystem != CoordinateSystem::Cartesian) {
@@ -597,10 +615,6 @@ void NtOptimizer2::setReactiveAtomsList() {
 }
 
 void NtOptimizer2::setConstraintsMap(const AtomCollection& atoms) {
-    std::cout <<"constrainmap size " << std::endl;
-    std::cout <<  _constraintsMap.size() << std::endl;
-  std::cout <<"atoms size " << std::endl;
-  std::cout << atoms.size() << std::endl;
   this->_constraintsMap.resize(atoms.size());
   for (auto const& i : _reactiveAtomsList) {
     std::vector<int> matches = {};
