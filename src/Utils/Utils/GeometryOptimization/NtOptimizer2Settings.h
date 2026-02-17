@@ -108,6 +108,14 @@ class NtOptimizer2Settings : public Settings {
     nt_electronic_bonds.setDefaultValue(true);
     this->_fields.push_back(SettingsNames::Optimizations::Nt2::electronicBonds, std::move(nt_electronic_bonds));
 
+    UniversalSettings::IntDescriptor nt_extra_macrocycles_after_bond_criteria(
+        "When electronic bonds are deactivated, the number of extra macrocycles run after bond "
+        "criteria are first met before stopping.");
+    nt_extra_macrocycles_after_bond_criteria.setDefaultValue(nt.extraMacrocyclesAfterBondCriteria);
+    nt_extra_macrocycles_after_bond_criteria.setMinimum(0);
+    this->_fields.push_back(SettingsNames::Optimizations::Nt2::extraMacrocyclesAfterBondCriteria,
+                            std::move(nt_extra_macrocycles_after_bond_criteria));
+
     this->resetToDefaults();
   }
 };
