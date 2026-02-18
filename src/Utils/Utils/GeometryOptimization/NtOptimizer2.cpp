@@ -39,6 +39,7 @@ int NtOptimizer2::optimize(AtomCollection& atoms, Core::Log& log) {
   int extraMacrocyclesRemaining = -1; // -1: not in post-bond-criteria phase when using distance-based bonds
   for (unsigned int loop = 0; loop < this->check.maxIter; loop++) {
     cycle++;
+    _inExtraMacrocyclesPhase = (extraMacrocyclesRemaining >= 0);
     // Micro cycles performed in true Cartesians due to constraints
     if (cycle > 1 && useMicroCycles && nAtoms > 2) {
       // Define micro iteration optimizer
@@ -232,8 +233,10 @@ void NtOptimizer2::updateGradients(const AtomCollection& atoms, const double& /*
       }
     }
     /* Check if one should keep pushing along the reaction coordinate */
-    /* Keep pushing until 10% above attractive bond order stop OR distance 10% below distance stop */
-    if (bo > 1.1 * check.attractiveBondOrderStop || dist < 0.9 * this->check.attractiveDistanceStop * r12cov) {
+    /* Keep pushing until 10% above attractive bond order stop OR distance 10% below distance stop.
+     * In the extra-macrocycles phase (all criteria fulfilled), keep pushing all coordinates. */
+    if (!_inExtraMacrocyclesPhase &&
+        (bo > 1.1 * check.attractiveBondOrderStop || dist < 0.9 * this->check.attractiveDistanceStop * r12cov)) {
       if (_firstCoordinateReachedIndex == -1) {
         _firstCoordinateReachedIndex = cycle;
       }
@@ -263,8 +266,9 @@ void NtOptimizer2::updateGradients(const AtomCollection& atoms, const double& /*
       }
     }
     /* Check if one should keep pulling along the reaction coordinate */
-    /* Keep pulling until 30% bellow repulsive bond order stop */
-    if (bo < 0.7 * this->check.repulsiveBondOrderStop) {
+    /* Keep pulling until 30% below repulsive bond order stop.
+     * In the extra-macrocycles phase (all criteria fulfilled), keep pulling all coordinates. */
+    if (!_inExtraMacrocyclesPhase && bo < 0.7 * this->check.repulsiveBondOrderStop) {
       if (_firstCoordinateReachedIndex == -1) {
         _firstCoordinateReachedIndex = cycle;
       }
