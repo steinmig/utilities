@@ -261,6 +261,9 @@ class NtOptimizer2 : public Optimizer {
   std::vector<std::vector<int>> _constraintsMap;
   Core::Calculator& _calculator;
   int _firstCoordinateReachedIndex = -1;
+  /** When true, we are in the extra macrocycles phase (distance-based bonds only): keep pushing/pulling all
+   *  reaction coordinates instead of stopping force on coordinates that already met their criterion. */
+  bool _inExtraMacrocyclesPhase = false;
 };
 
 namespace NtUtils {
